@@ -25,6 +25,7 @@ fn main() {
 
     let s = String::from("hello");
     takes_ownership(s);
+    // println!("{}, world!", s); - Err
 
     let x = 5;
     makes_copy(x);
