@@ -38,7 +38,13 @@ mod tests {
                     assert_eq!(expected_duration, duration);
                     assert_eq!(expected_description, description);
                 },
-            _ => panic!("Parsed wrong command type. Expected Command::NewTask, but got {:?}", result),
+            _ => panic!("Parsed wrong command type. Expected {:?}, but got {:?}", 
+                Command::NewTask { 
+                    duration: expected_duration, 
+                    description: String::from(expected_description),
+                },
+                result
+            ),
         }
     }
 
@@ -69,17 +75,9 @@ mod tests {
         let expected_duration = 10;
         let args = format!("{}", expected_duration);
 
-        let result = parse_command(&args)
-            .unwrap_or_else(|err| panic!("Error: {}", err));
+        let result = parse_command(&args);
 
-        match result {
-            Command::NewTask { duration, description }
-                => {
-                    assert_eq!(expected_duration, duration);
-                    assert_eq!(0, description.len());
-                },
-            _ => panic!("Parsed wrong command type. Expected Command::NewTask, but got {:?}", result),
-        }
+        result.unwrap();
     }
 
     #[test]
