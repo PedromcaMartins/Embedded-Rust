@@ -1,4 +1,6 @@
 mod parser;
+mod verifier;
+mod system;
 
 pub use parser::parser;
 
@@ -24,20 +26,7 @@ pub enum Command {
 
 impl Command {
     pub fn execute(self) {
-        match self {
-            Command::Q
-                => panic!("execute should not receive command Quit!"),
-            Command::T { duration, description } 
-                => new_task::execute(duration, description),
-            _ => println!("function not yet implemented!"),
-        }
-    }
-}
-
-mod new_task {
-    pub fn execute(duration: i32, description: String) {
-        // TODO: verify if the values have the correct length, size, ...
-
-        println!("executing new_task command");
+        verifier::verify_type_restrictions(&self);
+        system::execute(self);
     }
 }

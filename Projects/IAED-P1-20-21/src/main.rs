@@ -7,14 +7,18 @@ fn main() {
         print_commands();
 
         // parse command
-        let command = iaed_p1_20_21::parser();
+        let command = match iaed_p1_20_21::parser() {
+            Ok(Command::Q) => break,
+            Ok(command) => command,
+            Err(err) => {
+                println!("Error parsing command: {}.", err);
+                continue;
+            },
+        };
 
         // execute command
-        match command {
-            Ok(Command::Q) => break,
-            Ok(command) => command.execute(),
-            Err(err) => println!("Error parsing command: {}.", err),
-        }
+        command.execute();
+
         println!();
     }
 
