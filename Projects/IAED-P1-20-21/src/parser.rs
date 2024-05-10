@@ -4,6 +4,7 @@ use super::Command;
 
 mod q_command;
 mod t_command;
+mod l_command;
 
 
 pub fn parser() -> Result<Command, &'static str> {
@@ -28,6 +29,7 @@ fn parse_line(line: &str) -> Result<Command, &'static str> {
     match command {
         'q' => q_command::parse_command(args),
         't' => t_command::parse_command(args),
+        'l' => l_command::parse_command(args),
         _ => Err("Invalid command"),
     }
 }
@@ -63,7 +65,7 @@ mod tests {
         let line_q = "q";
         let line_t = "t 2 description";
         let line_l_1 = "l";
-        let line_l_2 = "l activity1 activity2";
+        let line_l_2 = "l 14 53";
         let line_n = "n 2";
         let line_u_1 = "u";
         let line_u_2 = "u username";
