@@ -22,7 +22,7 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
     };
 
     if args.next().is_some() {
-        return Err("Invalid args: There should not be any more arguments after 'n <duration>'");
+        return Err("Invalid args: There should not be any more arguments after 'm <task-id> <username> <activity>'");
     }
 
     Ok(Command::M { 
@@ -50,6 +50,6 @@ mod tests {
         assert_eq!(parse_command("23 activity"), Err("Missing arg <activity>: Expected 'm <task-id> <username> <activity>'"));
         assert_eq!(parse_command("username activity"), Err("Invalid args: Expected <task-id> to be integer"));
         assert_eq!(parse_command("twenty-three username activity"), Err("Invalid args: Expected <task-id> to be integer"));
-        assert_eq!(parse_command("23 username activity something something"), Err("Invalid args: There should not be any more arguments after 'n <duration>'"));
+        assert_eq!(parse_command("23 username activity something something"), Err("Invalid args: There should not be any more arguments after 'm <task-id> <username> <activity>'"));
     }
 }
