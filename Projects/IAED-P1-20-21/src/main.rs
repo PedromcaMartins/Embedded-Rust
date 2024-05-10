@@ -1,6 +1,8 @@
+use iaed_p1_20_21::Command;
+
 fn main() {
     println!("Welcome to Kanban Desk! Please select one of the commands at hand:");
-    
+
     loop {
         print_commands();
 
@@ -9,8 +11,8 @@ fn main() {
 
         // execute command
         match command {
+            Ok(Command::Quit) => break,
             Ok(command) => command.execute(),
-            Err("quit") => break,
             Err(err) => println!("Error parsing command: {}.", err),
         }
         println!();
