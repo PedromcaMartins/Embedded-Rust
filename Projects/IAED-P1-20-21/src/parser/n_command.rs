@@ -6,7 +6,7 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
     let duration = match args.next() {
         Some(arg) => match arg.parse::<i32>() {
             Ok(arg) => arg,
-            Err(_) => return Err("Invalid args: Expected <duration> to be integer"),
+            Err(_) => return Err("Invalid type: Expected <duration> to be integer"),
         },
         None => return Err("Missing arg <duration>: Expected 'n <duration>'"),
     };

@@ -79,6 +79,6 @@ mod tests {
     #[test]
     fn test_parser_invalid_input() {
         assert_eq!(parse_line(""), Err("Expected command"));
-        assert_eq!(parse_line("s string la la la"), Err("Invalid command"));
+        assert_eq!(parse_line("s string la la la"), Err("Invalid command"), "'s' command does not exist, so parser should return an Err()");
     }
 }

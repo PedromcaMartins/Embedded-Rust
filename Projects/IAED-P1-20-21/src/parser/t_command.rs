@@ -3,12 +3,12 @@ use super::Command;
 pub fn parse_command(args: &str) -> Result<Command, &'static str> {
     let (duration, description) = match args.split_once(' ') {
         Some((duration, description)) => (duration, description),
-        None => return Err("Missing arguments: Expected 't <duration> <description>'"),
+        None => return Err("Missing args: Expected 't <duration> <description>'"),
     };
 
     let duration = match duration.parse::<i32>() {
         Ok(duration) => duration,
-        Err(_) => return Err("Invalid argument: Expected <duration> to be integer"),
+        Err(_) => return Err("Invalid type: Expected <duration> to be integer"),
     };
 
     let description = description.trim().to_owned();

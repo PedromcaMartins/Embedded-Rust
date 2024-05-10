@@ -6,7 +6,7 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
     let task_id = match args.next() {
         Some(arg) => match arg.parse::<i32>() {
             Ok(arg) => arg,
-            Err(_) => return Err("Invalid args: Expected <task-id> to be integer"),
+            Err(_) => return Err("Invalid type: Expected <task-id> to be integer"),
         },
         None => return Err("Missing arg <task-id>: Expected 'm <task-id> <username> <activity>'"),
     };

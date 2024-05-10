@@ -12,7 +12,7 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
             true => None,
             false => Some(task_ids),
         }
-        Err(_) => return Err("Invalid argument: Expected <task-id> to be integer"),
+        Err(_) => return Err("Invalid type: Expected <task-id> to be integer"),
     };
 
     Ok(Command::L {
