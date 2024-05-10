@@ -8,7 +8,7 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
             Ok(arg) => arg,
             Err(_) => return Err("Invalid args: Expected <duration> to be integer"),
         },
-        None => return Err("Missing args: Expected 'n <duration>'"),
+        None => return Err("Missing arg <duration>: Expected 'n <duration>'"),
     };
 
     if args.next().is_some() {
