@@ -12,21 +12,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_q_command_no_arguments() {
-        let args = "";
-
-        let result = parse_command(args);
-
-        assert_eq!(result, Ok(Command::Q));
+    fn test_parse_command_valid_input() {
+        assert_eq!(parse_command(""), Ok(Command::Q));
     }
 
     #[test]
-    #[should_panic(expected = "'q' should not have arguments")]
-    fn parse_q_command_with_arguments() {
-        let args = "arguments";
-
-        let result = parse_command(args);
-
-        result.unwrap();
+    fn test_parse_command_invalid_input() {
+        assert_eq!(parse_command("arguments"), Err("Invalid args: 'q' should not have arguments"));
     }
 }

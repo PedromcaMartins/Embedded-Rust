@@ -40,28 +40,7 @@ mod tests {
     use super::*;
 
     #[test]
-    #[should_panic(expected = "Expected command")]
-    fn parse_empty_line() {
-        let line = "";
-
-        let result = parse_line(line);
-
-        result.unwrap();
-    }
-
-    #[test]
-    #[should_panic(expected = "Invalid command")]
-    fn parse_invalid_command() {
-        // s command does not exist
-        let line = "s string la la la";
-
-        let result = parse_line(line);
-
-        result.unwrap();
-    }
-
-    #[test]
-    fn parse_all_command() {
+    fn test_parser_all_command() {
         let line_q = "q";
         let line_t = "t 2 description";
         let line_l_1 = "l";
@@ -85,5 +64,11 @@ mod tests {
         assert!(parse_line(line_d).is_ok());
         assert!(parse_line(line_a_1).is_ok());
         assert!(parse_line(line_a_2).is_ok());
+    }
+
+    #[test]
+    fn test_parser_invalid_input() {
+        assert_eq!(parse_line(""), Err("Expected command"));
+        assert_eq!(parse_line("s string la la la"), Err("Invalid command"));
     }
 }

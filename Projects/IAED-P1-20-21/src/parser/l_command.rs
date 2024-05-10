@@ -12,7 +12,7 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
             true => None,
             false => Some(task_ids),
         }
-        Err(_) => return Err("Expected <task-id> as integer"),
+        Err(_) => return Err("Invalid argument: Expected <task-id> to be integer"),
     };
 
     Ok(Command::L {
@@ -25,36 +25,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_no_arguments() {
-        let args = "";
-
-        let result = parse_command(args);
-
-        assert_eq!(result, Ok(Command::L { task_ids: None }));
+    fn test_parse_command_valid_input() {
+        assert_eq!(parse_command(""), Ok(Command::L { task_ids: None }));
+        assert_eq!(parse_command("1 2 3 4 5"), Ok(Command::L { task_ids: Some(vec![1, 2, 3, 4, 5]) }));
     }
 
     #[test]
-    fn parse_valid_arguments() {
-        let args = "1 2 3 4 5";
-
-        let result = parse_command(args);
-        let expected_task_ids = vec![1, 2, 3, 4, 5];
-
-        assert_eq!(
-            result, 
-            Ok(Command::L {
-                task_ids: Some(expected_task_ids) 
-            })
-        );
-    }
-
-    #[test]
-    #[should_panic(expected = "as integer")]
-    fn parse_task_ids_not_a_number() {
-        let args = "one two three";
-
-        let results = parse_command(args);
-
-        results.unwrap();
+    fn test_parse_command_invalid_input() {
+        assert_eq!(parse_command("1 2 three"), Err("Invalid argument: Expected <task-id> to be integer"));
+        assert_eq!(parse_command("one two three"), Err("Invalid argument: Expected <task-id> to be integer"));
     }
 }
