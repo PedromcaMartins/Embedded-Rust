@@ -5,6 +5,7 @@ use super::Command;
 mod q_command;
 mod t_command;
 mod l_command;
+mod n_command;
 
 
 pub fn parser() -> Result<Command, &'static str> {
@@ -30,6 +31,7 @@ fn parse_line(line: &str) -> Result<Command, &'static str> {
         'q' => q_command::parse_command(args),
         't' => t_command::parse_command(args),
         'l' => l_command::parse_command(args),
+        'n' => n_command::parse_command(args),
         _ => Err("Invalid command"),
     }
 }
