@@ -25,15 +25,7 @@ mod tests {
 
     #[test]
     fn test_parse_command_valid_input() {
-        let result = parse_command("10 finish rust project!").unwrap();
-
-        match result {
-            Command::T { duration, description } => {
-                assert_eq!(duration, 10);
-                assert_eq!(description, "finish rust project!");
-            },
-            _ => panic!("Parsed wrong command type. Expected command 't', but got {:?}", result),
-        };
+        assert_eq!(parse_command("10 finish rust project!"), Ok(Command::T { duration: 10, description: String::from("finish rust project!") }));
     }
 
     #[test]
