@@ -2,6 +2,7 @@ use std::io;
 
 use super::Command;
 
+mod q_command;
 mod t_command;
 
 
