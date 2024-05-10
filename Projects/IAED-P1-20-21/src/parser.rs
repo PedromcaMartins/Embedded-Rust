@@ -1,5 +1,6 @@
 use std::io;
 
+use parser_error::ParserErrorType;
 use super::Command;
 
 mod q_command;
@@ -10,23 +11,22 @@ mod u_command;
 mod m_command;
 mod d_command;
 mod a_command;
+mod parser_error;
 
 
-pub fn parser() -> Result<Command, &'static str> {
+pub fn parser() -> Result<Command, ParserErrorType> {
     let mut line = String::new();
-    if io::stdin().read_line(&mut line).is_err() {
-        return Err("Error reading line");
-    }
+    io::stdin().read_line(&mut line)?;
 
     parse_line(&line)
 }
 
 
-fn parse_line(line: &str) -> Result<Command, &'static str> {
+fn parse_line(line: &str) -> Result<Command, ParserErrorType> {
     let mut line = line.trim().chars();
     let command = match line.next() {
         Some(char) => char,
-        None => return Err("Expected command"),
+        None => return Err(ParserErrorType::MissingCommand),
     };
 
     let args = line.as_str().trim();
@@ -40,7 +40,7 @@ fn parse_line(line: &str) -> Result<Command, &'static str> {
         'm' => m_command::parse_command(args),
         'd' => d_command::parse_command(args),
         'a' => a_command::parse_command(args),
-        _ => Err("Invalid command"),
+        _ => Err(ParserErrorType::InvalidCommand),
     }
 }
 
@@ -78,7 +78,7 @@ mod tests {
 
     #[test]
     fn test_parser_invalid_input() {
-        assert_eq!(parse_line(""), Err("Expected command"));
-        assert_eq!(parse_line("s string la la la"), Err("Invalid command"), "'s' command does not exist, so parser should return an Err()");
+        assert_eq!(parse_line(""), Err(ParserErrorType::MissingCommand));
+        assert_eq!(parse_line("s string la la la"), Err(ParserErrorType::InvalidCommand), "'s' command does not exist, so parser should return an Err()");
     }
 }

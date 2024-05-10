@@ -1,18 +1,18 @@
-use super::Command;
+use super::{parser_error::ParserErrorType, Command};
 
-pub fn parse_command(args: &str) -> Result<Command, &'static str> {
+pub fn parse_command(args: &str) -> Result<Command, ParserErrorType> {
     let mut args = args.split_whitespace();
 
     let duration = match args.next() {
         Some(arg) => match arg.parse::<i32>() {
             Ok(arg) => arg,
-            Err(_) => return Err("Invalid type: Expected <duration> to be integer"),
+            Err(_) => return Err(ParserErrorType::InvalidType { argument: "<duration>", expected_type: "integer" }),
         },
-        None => return Err("Missing arg <duration>: Expected 'n <duration>'"),
+        None => return Err(ParserErrorType::MissingArgs { arguments: "<duration>", expected_command: "n duration" }),
     };
 
     if args.next().is_some() {
-        return Err("Invalid args: There should not be any more arguments after 'n <duration>'");
+        return Err(ParserErrorType::TooManyArgs { expected_command: "n <duration>" });
     }
 
     Ok(Command::N { 
@@ -32,8 +32,8 @@ mod tests {
 
     #[test]
     fn test_parse_command_invalid_input() {
-        assert_eq!(parse_command(""), Err("Missing args: Expected 'n <duration>'"));
-        assert_eq!(parse_command("abc"), Err("Invalid args: Expected <duration> to be integer"));
-        assert_eq!(parse_command("10 extra"), Err("Invalid args: There should not be any more arguments after 'n <duration>'"));
+        assert_eq!(parse_command(""), Err(ParserErrorType::MissingArgs { arguments: "<duration>", expected_command: "n duration" }));
+        assert_eq!(parse_command("abc"), Err(ParserErrorType::InvalidType { argument: "<duration>", expected_type: "integer" }));
+        assert_eq!(parse_command("10 extra"), Err(ParserErrorType::TooManyArgs { expected_command: "n <duration>" }));
     }
 }

@@ -1,6 +1,6 @@
-use super::Command;
+use super::{parser_error::ParserErrorType, Command};
 
-pub fn parse_command(args: &str) -> Result<Command, &'static str> {
+pub fn parse_command(args: &str) -> Result<Command, ParserErrorType> {
     let args = args.split_whitespace();
 
     let task_ids: Result<Vec<i32>, _> = args
@@ -12,7 +12,7 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
             true => None,
             false => Some(task_ids),
         }
-        Err(_) => return Err("Invalid type: Expected <task-id> to be integer"),
+        Err(_) => return Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }),
     };
 
     Ok(Command::L {
@@ -32,7 +32,7 @@ mod tests {
 
     #[test]
     fn test_parse_command_invalid_input() {
-        assert_eq!(parse_command("1 2 three"), Err("Invalid argument: Expected <task-id> to be integer"));
-        assert_eq!(parse_command("one two three"), Err("Invalid argument: Expected <task-id> to be integer"));
+        assert_eq!(parse_command("1 2 three"), Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }));
+        assert_eq!(parse_command("one two three"), Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }));
     }
 }

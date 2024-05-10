@@ -1,28 +1,28 @@
-use super::Command;
+use super::{parser_error::ParserErrorType, Command};
 
-pub fn parse_command(args: &str) -> Result<Command, &'static str> {
+pub fn parse_command(args: &str) -> Result<Command, ParserErrorType> {
     let mut args = args.split_whitespace();
 
     let task_id = match args.next() {
         Some(arg) => match arg.parse::<i32>() {
             Ok(arg) => arg,
-            Err(_) => return Err("Invalid type: Expected <task-id> to be integer"),
+            Err(_) => return Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }),
         },
-        None => return Err("Missing arg <task-id>: Expected 'm <task-id> <username> <activity>'"),
+        None => return Err(ParserErrorType::MissingArgs { arguments: "<task-id>", expected_command: "m <task-id> <username> <activity>" }),
     };
 
     let username = match args.next().map(String::from) {
         Some(arg) => arg,
-        None => return Err("Missing arg <username>: Expected 'm <task-id> <username> <activity>'"),
+        None => return Err(ParserErrorType::MissingArgs { arguments: "<username>", expected_command: "m <task-id> <username> <activity>" }),
     };
 
     let activity = match args.next().map(String::from) {
         Some(arg) => arg,
-        None => return Err("Missing arg <activity>: Expected 'm <task-id> <username> <activity>'"),
+        None => return Err(ParserErrorType::MissingArgs { arguments: "<activity>", expected_command: "m <task-id> <username> <activity>" }),
     };
 
     if args.next().is_some() {
-        return Err("Invalid args: There should not be any more arguments after 'm <task-id> <username> <activity>'");
+        return Err(ParserErrorType::TooManyArgs { expected_command: "m <task-id> <username> <activity>" });
     }
 
     Ok(Command::M { 
@@ -44,12 +44,12 @@ mod tests {
 
     #[test]
     fn test_parse_command_invalid_input() {
-        assert_eq!(parse_command(""), Err("Missing arg <task-id>: Expected 'm <task-id> <username> <activity>'"));
-        assert_eq!(parse_command("23"), Err("Missing arg <username>: Expected 'm <task-id> <username> <activity>'"));
-        assert_eq!(parse_command("23 username"), Err("Missing arg <activity>: Expected 'm <task-id> <username> <activity>'"));
-        assert_eq!(parse_command("23 activity"), Err("Missing arg <activity>: Expected 'm <task-id> <username> <activity>'"));
-        assert_eq!(parse_command("username activity"), Err("Invalid args: Expected <task-id> to be integer"));
-        assert_eq!(parse_command("twenty-three username activity"), Err("Invalid args: Expected <task-id> to be integer"));
-        assert_eq!(parse_command("23 username activity something something"), Err("Invalid args: There should not be any more arguments after 'm <task-id> <username> <activity>'"));
+        assert_eq!(parse_command(""), Err(ParserErrorType::MissingArgs { arguments: "<task-id>", expected_command: "m <task-id> <username> <activity>" }));
+        assert_eq!(parse_command("23"), Err(ParserErrorType::MissingArgs { arguments: "<username>", expected_command: "m <task-id> <username> <activity>" }));
+        assert_eq!(parse_command("23 username"), Err(ParserErrorType::MissingArgs { arguments: "<activity>", expected_command: "m <task-id> <username> <activity>" }));
+        assert_eq!(parse_command("23 activity"), Err(ParserErrorType::MissingArgs { arguments: "<activity>", expected_command: "m <task-id> <username> <activity>" }));
+        assert_eq!(parse_command("username activity"), Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }));
+        assert_eq!(parse_command("twenty-three username activity"), Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }));
+        assert_eq!(parse_command("23 username activity something something"), Err(ParserErrorType::TooManyArgs { expected_command: "m <task-id> <username> <activity>" }));
     }
 }

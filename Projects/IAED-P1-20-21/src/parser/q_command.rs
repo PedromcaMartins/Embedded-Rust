@@ -1,9 +1,9 @@
-use super::Command;
+use super::{parser_error::ParserErrorType, Command};
 
-pub fn parse_command(args: &str) -> Result<Command, &'static str> {
+pub fn parse_command(args: &str) -> Result<Command, ParserErrorType> {
     match args.is_empty() {
         true => Ok(Command::Q),
-        false => Err("Invalid args: 'q' should not have arguments"),
+        false => Err(ParserErrorType::ShouldNotHaveArgs { expected_command: "q" }),
     }
 }
 
@@ -18,6 +18,6 @@ mod tests {
 
     #[test]
     fn test_parse_command_invalid_input() {
-        assert_eq!(parse_command("arguments"), Err("Invalid args: 'q' should not have arguments"));
+        assert_eq!(parse_command("arguments"), Err(ParserErrorType::ShouldNotHaveArgs { expected_command: "q" }));
     }
 }

@@ -1,12 +1,12 @@
-use super::Command;
+use super::{parser_error::ParserErrorType, Command};
 
-pub fn parse_command(args: &str) -> Result<Command, &'static str> {
+pub fn parse_command(args: &str) -> Result<Command, ParserErrorType> {
     let mut args = args.split_whitespace();
 
     let username = args.next().map(String::from);
 
     if username.is_some() && args.next().is_some() {
-        return Err("Invalid args: There should not be any more arguments after 'u <username>'");
+        return Err(ParserErrorType::TooManyArgs { expected_command: "u <username>" });
     }
 
     Ok(Command::U { 
@@ -26,6 +26,6 @@ mod tests {
 
     #[test]
     fn test_parse_command_invalid_input() {
-        assert_eq!(parse_command("username jiberish"), Err("Invalid args: There should not be any more arguments after 'u <username>'"));
+        assert_eq!(parse_command("username jiberish"), Err(ParserErrorType::TooManyArgs { expected_command: "u <username>" }));
     }
 }

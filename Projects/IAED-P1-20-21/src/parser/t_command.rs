@@ -1,14 +1,14 @@
-use super::Command;
+use super::{parser_error::ParserErrorType, Command};
 
-pub fn parse_command(args: &str) -> Result<Command, &'static str> {
+pub fn parse_command(args: &str) -> Result<Command, ParserErrorType> {
     let (duration, description) = match args.split_once(' ') {
         Some((duration, description)) => (duration, description),
-        None => return Err("Missing args: Expected 't <duration> <description>'"),
+        None => return Err(ParserErrorType::MissingArgs { arguments: "", expected_command: "t <duration> <description>" }),
     };
 
     let duration = match duration.parse::<i32>() {
         Ok(duration) => duration,
-        Err(_) => return Err("Invalid type: Expected <duration> to be integer"),
+        Err(_) => return Err(ParserErrorType::InvalidType { argument: "<duration>", expected_type: "integer" }),
     };
 
     let description = description.trim().to_owned();
@@ -30,9 +30,9 @@ mod tests {
 
     #[test]
     fn test_parse_command_invalid_input() {
-        assert_eq!(parse_command(""), Err("Missing arguments: Expected 't <duration> <description>'"));
-        assert_eq!(parse_command("10"),Err("Missing arguments: Expected 't <duration> <description>'"));
-        assert_eq!(parse_command("finish rust project!"),Err("Invalid argument: Expected <duration> to be integer"));
-        assert_eq!(parse_command("0xa4e finish rust project!"),Err("Invalid argument: Expected <duration> to be integer"));
+        assert_eq!(parse_command(""), Err(ParserErrorType::MissingArgs { arguments: "", expected_command: "t <duration> <description>" }));
+        assert_eq!(parse_command("10"), Err(ParserErrorType::MissingArgs { arguments: "", expected_command: "t <duration> <description>" }));
+        assert_eq!(parse_command("finish rust project!"), Err(ParserErrorType::InvalidType { argument: "<duration>", expected_type: "integer" }));
+        assert_eq!(parse_command("0xa4e finish rust project!"), Err(ParserErrorType::InvalidType { argument: "<duration>", expected_type: "integer" }));
     }
 }
