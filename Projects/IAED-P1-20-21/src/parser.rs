@@ -7,6 +7,7 @@ mod t_command;
 mod l_command;
 mod n_command;
 mod u_command;
+mod m_command;
 
 
 pub fn parser() -> Result<Command, &'static str> {
@@ -34,6 +35,7 @@ fn parse_line(line: &str) -> Result<Command, &'static str> {
         'l' => l_command::parse_command(args),
         'n' => n_command::parse_command(args),
         'u' => u_command::parse_command(args),
+        'm' => m_command::parse_command(args),
         _ => Err("Invalid command"),
     }
 }
