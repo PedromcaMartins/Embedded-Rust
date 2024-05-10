@@ -34,6 +34,6 @@ mod tests {
     fn test_parse_command_invalid_input() {
         assert_eq!(parse_command(""), Err("Missing args: Expected 'n <duration>'"));
         assert_eq!(parse_command("abc"), Err("Invalid args: Expected <duration> to be integer"));
-        assert_eq!(parse_command("10 extra"), Err("Invalid args: there should not be any more arguments after 'n <duration>'"));
+        assert_eq!(parse_command("10 extra"), Err("Invalid args: There should not be any more arguments after 'n <duration>'"));
     }
 }
