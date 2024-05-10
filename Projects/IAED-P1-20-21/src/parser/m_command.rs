@@ -3,11 +3,7 @@ use super::Command;
 pub fn parse_command(args: &str) -> Result<Command, &'static str> {
     let mut args = args.split_whitespace();
 
-    let task_id = args.next();
-    let username = args.next().map(String::from);
-    let activity = args.next().map(String::from);
-
-    let task_id = match task_id {
+    let task_id = match args.next() {
         Some(arg) => match arg.parse::<i32>() {
             Ok(arg) => arg,
             Err(_) => return Err("Invalid args: Expected <task-id> to be integer"),
@@ -15,12 +11,12 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
         None => return Err("Missing arg <task-id>: Expected 'm <task-id> <username> <activity>'"),
     };
 
-    let username = match username {
+    let username = match args.next().map(String::from) {
         Some(arg) => arg,
         None => return Err("Missing arg <username>: Expected 'm <task-id> <username> <activity>'"),
     };
 
-    let activity = match activity {
+    let activity = match args.next().map(String::from) {
         Some(arg) => arg,
         None => return Err("Missing arg <activity>: Expected 'm <task-id> <username> <activity>'"),
     };
