@@ -2,7 +2,7 @@ use super::Command;
 
 pub fn parse_command(args: &str) -> Result<Command, &'static str> {
     match args.is_empty() {
-        true => Ok(Command::Quit),
+        true => Ok(Command::Q),
         false => Err("Invalid args: 'q' should not have arguments"),
     }
 }
@@ -17,7 +17,7 @@ mod tests {
 
         let result = parse_command(args);
 
-        assert_eq!(result, Ok(Command::Quit));
+        assert_eq!(result, Ok(Command::Q));
     }
 
     #[test]

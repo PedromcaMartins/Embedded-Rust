@@ -11,7 +11,7 @@ fn main() {
 
         // execute command
         match command {
-            Ok(Command::Quit) => break,
+            Ok(Command::Q) => break,
             Ok(command) => command.execute(),
             Err(err) => println!("Error parsing command: {}.", err),
         }

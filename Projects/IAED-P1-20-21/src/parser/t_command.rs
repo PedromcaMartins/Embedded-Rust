@@ -13,7 +13,7 @@ pub fn parse_command(args: &str) -> Result<Command, &'static str> {
 
     let description = description.trim().to_owned();
 
-    Ok(Command::NewTask{
+    Ok(Command::T{
         duration,
         description,
     })
@@ -33,13 +33,13 @@ mod tests {
             .unwrap_or_else(|err| panic!("Error: {}", err));
 
         match result {
-            Command::NewTask { duration, description }
+            Command::T { duration, description }
                 => {
                     assert_eq!(expected_duration, duration);
                     assert_eq!(expected_description, description);
                 },
             _ => panic!("Parsed wrong command type. Expected {:?}, but got {:?}", 
-                Command::NewTask { 
+                Command::T{ 
                     duration: expected_duration, 
                     description: String::from(expected_description),
                 },
