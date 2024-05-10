@@ -56,7 +56,7 @@ mod tests {
     #[should_panic(expected = "<duration> as integer")]
     fn parse_no_duration() {
         let expected_description = "finish rust project!";
-        let args = format!("{} {}", "", expected_description);
+        let args = String::from(expected_description);
 
         let result = parse_command(&args);
 
@@ -64,9 +64,10 @@ mod tests {
     }
 
     #[test]
+    #[should_panic(expected = "'t <duration> <description>'")]
     fn parse_no_description() {
         let expected_duration = 10;
-        let args = format!("{} {}", expected_duration, "");
+        let args = format!("{}", expected_duration);
 
         let result = parse_command(&args)
             .unwrap_or_else(|err| panic!("Error: {}", err));
