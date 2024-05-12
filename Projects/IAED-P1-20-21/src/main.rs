@@ -1,4 +1,4 @@
-use iaed_p1_20_21::Command;
+use iaed_p1_20_21::ErrorKind;
 
 fn main() {
     println!("Welcome to Kanban Desk! Please select one of the commands at hand:");
@@ -6,24 +6,12 @@ fn main() {
     loop {
         print_commands();
 
-        // parse command
-        let command = match iaed_p1_20_21::parser() {
-            Ok(Command::Q) => break,
-            Ok(command) => command,
-            Err(err) => {
-                println!("Error parsing command: {}.", err);
-                continue;
-            },
-        };
-
-        // verify parsed parameters
-        if let Err(err) = command.verify_paramenters() {
-            println!("Error verifying input: {}", err);
-            continue;
+        if let Err(err) = iaed_p1_20_21::parser_argument_verifier_and_executer() {
+            println!("{}", err);
+            if err.error_kind == ErrorKind::QuitCommand {
+                break;
+            }
         }
-
-        // execute command
-        command.execute();
 
         println!();
     }

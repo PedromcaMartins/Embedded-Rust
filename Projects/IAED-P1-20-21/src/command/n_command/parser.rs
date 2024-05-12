@@ -1,6 +1,6 @@
-use super::{parser_error::ParserErrorType, Command};
+use super::{NCommand, ParserErrorType};
 
-pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
+pub fn parse_arguments(args: &str) -> Result<NCommand, ParserErrorType> {
     let mut args = args.split_whitespace();
 
     let duration = match args.next() {
@@ -15,7 +15,7 @@ pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
         return Err(ParserErrorType::TooManyArgs { expected_command: "n <duration>" });
     }
 
-    Ok(Command::N { 
+    Ok(NCommand { 
         duration
     })
 }
@@ -26,8 +26,8 @@ mod tests {
 
     #[test]
     fn test_parse_arguments_valid_input() {
-        assert_eq!(parse_arguments("10"), Ok(Command::N { duration: 10 }));
-        assert_eq!(parse_arguments("100"), Ok(Command::N { duration: 100 }));
+        assert_eq!(parse_arguments("10"), Ok(NCommand { duration: 10 }));
+        assert_eq!(parse_arguments("100"), Ok(NCommand { duration: 100 }));
     }
 
     #[test]

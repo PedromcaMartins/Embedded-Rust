@@ -1,6 +1,6 @@
-use super::{parser_error::ParserErrorType, Command};
+use super::{DCommand, ParserErrorType};
 
-pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
+pub fn parse_arguments(args: &str) -> Result<DCommand, ParserErrorType> {
     let mut args = args.split_whitespace();
 
     let activity = match args.next().map(String::from) {
@@ -12,7 +12,7 @@ pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
         return Err(ParserErrorType::TooManyArgs { expected_command: "d <activity>" });
     }
 
-    Ok(Command::D {
+    Ok(DCommand {
         activity,
     })
 }
@@ -23,8 +23,8 @@ mod tests {
 
     #[test]
     fn test_parse_arguments_valid_input() {
-        assert_eq!(parse_arguments("activity"), Ok(Command::D { activity: String::from("activity") }));
-        assert_eq!(parse_arguments("activity2"), Ok(Command::D { activity: String::from("activity2") }));
+        assert_eq!(parse_arguments("activity"), Ok(DCommand { activity: String::from("activity") }));
+        assert_eq!(parse_arguments("activity2"), Ok(DCommand { activity: String::from("activity2") }));
     }
 
     #[test]

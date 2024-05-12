@@ -35,7 +35,7 @@ impl fmt::Display for ParserErrorType {
             ),
             ParserErrorType::IoError { message: _ } => write!(
                 f, "Error reading line"
-            )
+            ),
         }
     }
 }

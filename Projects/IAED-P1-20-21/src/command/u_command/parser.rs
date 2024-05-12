@@ -1,6 +1,6 @@
-use super::{parser_error::ParserErrorType, Command};
+use super::{UCommand, ParserErrorType};
 
-pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
+pub fn parse_arguments(args: &str) -> Result<UCommand, ParserErrorType> {
     let mut args = args.split_whitespace();
 
     let username = args.next().map(String::from);
@@ -9,7 +9,7 @@ pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
         return Err(ParserErrorType::TooManyArgs { expected_command: "u <username>" });
     }
 
-    Ok(Command::U { 
+    Ok(UCommand { 
         username,
     })
 }
@@ -20,8 +20,8 @@ mod tests {
 
     #[test]
     fn test_parse_arguments_valid_input() {
-        assert_eq!(parse_arguments(""), Ok(Command::U { username: None }));
-        assert_eq!(parse_arguments("username"), Ok(Command::U { username: Some(String::from("username")) }));
+        assert_eq!(parse_arguments(""), Ok(UCommand { username: None }));
+        assert_eq!(parse_arguments("username"), Ok(UCommand { username: Some(String::from("username")) }));
     }
 
     #[test]

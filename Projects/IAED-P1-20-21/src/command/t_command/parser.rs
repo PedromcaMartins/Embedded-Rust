@@ -1,6 +1,6 @@
-use super::{parser_error::ParserErrorType, Command};
+use super::{TCommand, ParserErrorType};
 
-pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
+pub fn parse_arguments(args: &str) -> Result<TCommand, ParserErrorType> {
     let (duration, description) = match args.split_once(' ') {
         Some((duration, description)) => (duration, description),
         None => return Err(ParserErrorType::MissingArgs { arguments: "", expected_command: "t <duration> <description>" }),
@@ -13,7 +13,7 @@ pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
 
     let description = description.trim().to_owned();
 
-    Ok(Command::T{
+    Ok(TCommand{
         duration,
         description,
     })
@@ -25,7 +25,7 @@ mod tests {
 
     #[test]
     fn test_parse_arguments_valid_input() {
-        assert_eq!(parse_arguments("10 finish rust project!"), Ok(Command::T { duration: 10, description: String::from("finish rust project!") }));
+        assert_eq!(parse_arguments("10 finish rust project!"), Ok(TCommand { duration: 10, description: String::from("finish rust project!") }));
     }
 
     #[test]

@@ -1,6 +1,6 @@
-use super::{parser_error::ParserErrorType, Command};
+use super::{MCommand, ParserErrorType};
 
-pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
+pub fn parse_arguments(args: &str) -> Result<MCommand, ParserErrorType> {
     let mut args = args.split_whitespace();
 
     let task_id = match args.next() {
@@ -25,7 +25,7 @@ pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
         return Err(ParserErrorType::TooManyArgs { expected_command: "m <task-id> <username> <activity>" });
     }
 
-    Ok(Command::M { 
+    Ok(MCommand { 
         task_id,
         username,
         activity,
@@ -38,8 +38,8 @@ mod tests {
 
     #[test]
     fn test_parse_arguments_valid_input() {
-        assert_eq!(parse_arguments("23 username activity"), Ok(Command::M { task_id: 23, username: String::from("username"), activity: String::from("activity") }));
-        assert_eq!(parse_arguments("5234 username2 activity2"), Ok(Command::M { task_id: 5234, username: String::from("username2"), activity: String::from("activity2") }));
+        assert_eq!(parse_arguments("23 username activity"), Ok(MCommand { task_id: 23, username: String::from("username"), activity: String::from("activity") }));
+        assert_eq!(parse_arguments("5234 username2 activity2"), Ok(MCommand { task_id: 5234, username: String::from("username2"), activity: String::from("activity2") }));
     }
 
     #[test]
