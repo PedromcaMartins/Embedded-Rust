@@ -16,6 +16,12 @@ fn main() {
             },
         };
 
+        // verify parsed parameters
+        if let Err(err) = command.verify_paramenters() {
+            println!("Error verifying input: {}", err);
+            continue;
+        }
+
         // execute command
         command.execute();
 

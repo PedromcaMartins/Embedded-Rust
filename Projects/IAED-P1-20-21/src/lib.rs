@@ -4,6 +4,8 @@ mod system;
 
 pub use parser::parser;
 
+use verifier::VerifierErrorType;
+
 #[derive(Debug, PartialEq)]
 pub enum Command {
     /// Quit Program
@@ -25,8 +27,11 @@ pub enum Command {
 }
 
 impl Command {
+    pub fn verify_paramenters(&self) -> Result<(), VerifierErrorType> {
+        verifier::verify_parameters(self)
+    }
+
     pub fn execute(self) {
-        verifier::verify_type_restrictions(&self);
         system::execute(self);
     }
 }
