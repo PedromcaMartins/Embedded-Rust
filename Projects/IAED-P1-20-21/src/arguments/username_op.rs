@@ -10,6 +10,8 @@ pub fn verify(username: &Option<String>) -> Result<(), VerifierErrorType> {
 
 #[cfg(test)]
 mod tests {
+    use crate::arguments::MAX_LEN_USERNAME;
+
     use super::*;
 
     #[test]
@@ -22,6 +24,6 @@ mod tests {
     fn test_verify_invalid_input() {
         assert_eq!(verify(&Some(String::from(""))), Err(VerifierErrorType::EmptyUsername));
         assert_eq!(verify(&Some(String::from("u s"))), Err(VerifierErrorType::WhiteSpacesInUsername));
-        assert_eq!(verify(&Some("u".repeat(username::MAX_LEN_USERNAME + 1))), Err(VerifierErrorType::ExceedsMaxLenUsername));
+        assert_eq!(verify(&Some("u".repeat(MAX_LEN_USERNAME + 1))), Err(VerifierErrorType::ExceedsMaxLenUsername));
     }
 }

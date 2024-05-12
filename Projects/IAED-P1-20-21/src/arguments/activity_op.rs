@@ -1,4 +1,4 @@
-use super::{activity, VerifierErrorType};
+use super::{VerifierErrorType, activity};
 
 pub fn verify(activity: &Option<String>) -> Result<(), VerifierErrorType> {
     if let Some(activity) = activity {
@@ -10,6 +10,8 @@ pub fn verify(activity: &Option<String>) -> Result<(), VerifierErrorType> {
 
 #[cfg(test)]
 mod tests {
+    use crate::arguments::MAX_LEN_ACTIVITY;
+
     use super::*;
 
     #[test]
@@ -22,6 +24,6 @@ mod tests {
     fn test_verify_invalid_input() {
         assert_eq!(verify(&Some(String::from(""))), Err(VerifierErrorType::EmptyActivity));
         assert_eq!(verify(&Some(String::from("ACTIvity"))), Err(VerifierErrorType::LowerCaseCharactersInActivity));
-        assert_eq!(verify(&Some("A".repeat(activity::MAX_LEN_ACTIVITY + 1))), Err(VerifierErrorType::ExceedsMaxLenActivity));
+        assert_eq!(verify(&Some("A".repeat(MAX_LEN_ACTIVITY + 1))), Err(VerifierErrorType::ExceedsMaxLenActivity));
     }
 }
