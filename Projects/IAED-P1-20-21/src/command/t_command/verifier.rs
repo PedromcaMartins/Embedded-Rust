@@ -1,5 +1,5 @@
 use super::{TCommand, VerifierErrorType};
-use crate::verifier::{description, duration};
+use crate::arguments::{description, duration};
 
 pub fn verify_parameters(command: &TCommand) -> Result<(), VerifierErrorType> {
     duration::verify(&command.duration)?; 

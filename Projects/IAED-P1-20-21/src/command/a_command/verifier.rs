@@ -1,5 +1,5 @@
 use super::{ACommand, VerifierErrorType};
-use crate::verifier::activity_op;
+use crate::arguments::activity_op;
 
 pub fn verify_parameters(command: &ACommand) -> Result<(), VerifierErrorType> {
     activity_op::verify(&command.activity)

@@ -1,5 +1,5 @@
 use super::{MCommand, VerifierErrorType};
-use crate::verifier::{activity, task_id, username};
+use crate::arguments::{activity, task_id, username};
 
 pub fn verify_parameters(command: &MCommand) -> Result<(), VerifierErrorType> {
     task_id::verify(&command.task_id)?;

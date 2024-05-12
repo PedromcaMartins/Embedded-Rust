@@ -1,5 +1,5 @@
 use super::{NCommand, VerifierErrorType};
-use crate::verifier::duration;
+use crate::arguments::duration;
 
 pub fn verify_parameters(command: &NCommand) -> Result<(), VerifierErrorType> {
     duration::verify(&command.duration)

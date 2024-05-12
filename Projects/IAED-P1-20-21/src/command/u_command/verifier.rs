@@ -1,5 +1,5 @@
 use super::{UCommand, VerifierErrorType};
-use crate::verifier::username_op;
+use crate::arguments::username_op;
 
 pub fn verify_parameters(command: &UCommand) -> Result<(), VerifierErrorType> {
     username_op::verify(&command.username)

@@ -1,5 +1,5 @@
 use super::{LCommand, VerifierErrorType};
-use crate::verifier::task_ids;
+use crate::arguments::task_ids;
 
 pub fn verify_parameters(command: &LCommand) -> Result<(), VerifierErrorType> {
     task_ids::verify(&command.task_ids)

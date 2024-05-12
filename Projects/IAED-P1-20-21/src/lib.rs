@@ -4,7 +4,7 @@ mod error;
 
 // Functionality modules
 mod parser;
-mod verifier;
+mod arguments;
 
 pub use error::{ParserErrorType, VerifierErrorType, ErrorKind, AppError};
 

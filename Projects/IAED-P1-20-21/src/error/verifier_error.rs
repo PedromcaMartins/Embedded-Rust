@@ -1,11 +1,11 @@
 use std::fmt::Display;
 
-use crate::verifier;
+use crate::arguments;
 
-use verifier::description::MAX_LEN_DESCRIPTION;
-use verifier::task_id::{MIN_VALUE_TASK_ID, MAX_VALUE_TASK_ID};
-use verifier::username::MAX_LEN_USERNAME;
-use verifier::activity::MAX_LEN_ACTIVITY;
+use arguments::description::MAX_LEN_DESCRIPTION;
+use arguments::task_id::{MIN_VALUE_TASK_ID, MAX_VALUE_TASK_ID};
+use arguments::username::MAX_LEN_USERNAME;
+use arguments::activity::MAX_LEN_ACTIVITY;
 
 #[derive(Debug, PartialEq)]
 pub enum VerifierErrorType {
