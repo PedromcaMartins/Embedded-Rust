@@ -15,3 +15,14 @@ mod t_command {
         println!("executing new_task command");
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic(expected = "should not receive command Quit")]
+    fn test_execute_panic() {
+        execute(Command::Q);
+    }
+}
