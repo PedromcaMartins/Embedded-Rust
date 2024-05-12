@@ -1,6 +1,6 @@
 use super::VerifierErrorType;
 
-pub static MAX_LEN_DESCRIPTION: usize = 50;
+use super::MAX_LEN_DESCRIPTION;
 
 pub fn verify(description: &str) -> Result<(), VerifierErrorType> {
     if description.is_empty() {

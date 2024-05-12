@@ -1,7 +1,7 @@
 use super::VerifierErrorType;
 
-pub static MIN_VALUE_TASK_ID: i32 = 1;
-pub static MAX_VALUE_TASK_ID: i32 = 10_000;
+use super::MIN_VALUE_TASK_ID;
+use super::MAX_VALUE_TASK_ID;
 
 pub fn verify(task_id: &i32) -> Result<(), VerifierErrorType> {
     if (*task_id < MIN_VALUE_TASK_ID) || (*task_id > MAX_VALUE_TASK_ID) {

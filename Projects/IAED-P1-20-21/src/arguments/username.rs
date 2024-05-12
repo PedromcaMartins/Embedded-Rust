@@ -1,6 +1,6 @@
 use super::VerifierErrorType;
 
-pub static MAX_LEN_USERNAME: usize = 20;
+use super::MAX_LEN_USERNAME;
 
 pub fn verify(username: &str) -> Result<(), VerifierErrorType> {
     if username.is_empty() {

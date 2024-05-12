@@ -1,6 +1,6 @@
 use super::VerifierErrorType;
 
-pub static MAX_LEN_ACTIVITY: usize = 20;
+use super::MAX_LEN_ACTIVITY;
 
 pub fn verify(activity: &str) -> Result<(), VerifierErrorType> {
     if activity.is_empty() {
