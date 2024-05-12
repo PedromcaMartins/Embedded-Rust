@@ -1,6 +1,6 @@
 use super::{parser_error::ParserErrorType, Command};
 
-pub fn parse_command(args: &str) -> Result<Command, ParserErrorType> {
+pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
     let mut args = args.split_whitespace();
 
     let duration = match args.next() {
@@ -25,15 +25,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_command_valid_input() {
-        assert_eq!(parse_command("10"), Ok(Command::N { duration: 10 }));
-        assert_eq!(parse_command("100"), Ok(Command::N { duration: 100 }));
+    fn test_parse_arguments_valid_input() {
+        assert_eq!(parse_arguments("10"), Ok(Command::N { duration: 10 }));
+        assert_eq!(parse_arguments("100"), Ok(Command::N { duration: 100 }));
     }
 
     #[test]
-    fn test_parse_command_invalid_input() {
-        assert_eq!(parse_command(""), Err(ParserErrorType::MissingArgs { arguments: "<duration>", expected_command: "n duration" }));
-        assert_eq!(parse_command("abc"), Err(ParserErrorType::InvalidType { argument: "<duration>", expected_type: "integer" }));
-        assert_eq!(parse_command("10 extra"), Err(ParserErrorType::TooManyArgs { expected_command: "n <duration>" }));
+    fn test_parse_arguments_invalid_input() {
+        assert_eq!(parse_arguments(""), Err(ParserErrorType::MissingArgs { arguments: "<duration>", expected_command: "n duration" }));
+        assert_eq!(parse_arguments("abc"), Err(ParserErrorType::InvalidType { argument: "<duration>", expected_type: "integer" }));
+        assert_eq!(parse_arguments("10 extra"), Err(ParserErrorType::TooManyArgs { expected_command: "n <duration>" }));
     }
 }

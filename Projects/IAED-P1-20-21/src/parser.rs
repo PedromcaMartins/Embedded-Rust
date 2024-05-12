@@ -32,14 +32,14 @@ fn parse_line(line: &str) -> Result<Command, ParserErrorType> {
     let args = line.as_str().trim();
 
     match command {
-        'q' => q_command::parse_command(args),
-        't' => t_command::parse_command(args),
-        'l' => l_command::parse_command(args),
-        'n' => n_command::parse_command(args),
-        'u' => u_command::parse_command(args),
-        'm' => m_command::parse_command(args),
-        'd' => d_command::parse_command(args),
-        'a' => a_command::parse_command(args),
+        'q' => q_command::parse_arguments(args),
+        't' => t_command::parse_arguments(args),
+        'l' => l_command::parse_arguments(args),
+        'n' => n_command::parse_arguments(args),
+        'u' => u_command::parse_arguments(args),
+        'm' => m_command::parse_arguments(args),
+        'd' => d_command::parse_arguments(args),
+        'a' => a_command::parse_arguments(args),
         _ => Err(ParserErrorType::InvalidCommand),
     }
 }

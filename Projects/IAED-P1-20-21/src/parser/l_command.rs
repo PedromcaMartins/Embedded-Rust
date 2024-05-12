@@ -1,6 +1,6 @@
 use super::{parser_error::ParserErrorType, Command};
 
-pub fn parse_command(args: &str) -> Result<Command, ParserErrorType> {
+pub fn parse_arguments(args: &str) -> Result<Command, ParserErrorType> {
     let args = args.split_whitespace();
 
     let task_ids: Result<Vec<i32>, _> = args
@@ -25,14 +25,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse_command_valid_input() {
-        assert_eq!(parse_command(""), Ok(Command::L { task_ids: None }));
-        assert_eq!(parse_command("1 2 3 4 5"), Ok(Command::L { task_ids: Some(vec![1, 2, 3, 4, 5]) }));
+    fn test_parse_arguments_valid_input() {
+        assert_eq!(parse_arguments(""), Ok(Command::L { task_ids: None }));
+        assert_eq!(parse_arguments("1 2 3 4 5"), Ok(Command::L { task_ids: Some(vec![1, 2, 3, 4, 5]) }));
     }
 
     #[test]
-    fn test_parse_command_invalid_input() {
-        assert_eq!(parse_command("1 2 three"), Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }));
-        assert_eq!(parse_command("one two three"), Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }));
+    fn test_parse_arguments_invalid_input() {
+        assert_eq!(parse_arguments("1 2 three"), Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }));
+        assert_eq!(parse_arguments("one two three"), Err(ParserErrorType::InvalidType { argument: "<task-id>", expected_type: "integer" }));
     }
 }
