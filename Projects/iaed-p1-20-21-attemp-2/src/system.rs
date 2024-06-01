@@ -127,7 +127,7 @@ impl System {
 
                 tasks = ids
                     .iter()
-                    .map(|id| self.tasks.get(id).ok_or(AppError::CommandL(CommandLError::NoSuchTask)))
+                    .map(|id| self.tasks.get(id).ok_or(AppError::CommandL(CommandLError::NoSuchTask{ id: id.to_owned() })))
                     .collect::<Result<Vec<&Task>, AppError>>()?;
             },
             None => {
