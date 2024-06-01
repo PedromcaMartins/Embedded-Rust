@@ -1,33 +1,32 @@
 #[derive(Debug)]
-pub enum QuestionTError {
+pub enum CommandTError {
     TooManyTasks,
     DuplicateDescription,
-    InvalidDuration,
+    InvalidEstimatedDuration,
 }
 
 
 #[derive(Debug)]
-pub enum QuestionLError {
+pub enum CommandLError {
     NoSuchTask,
 }
 
 
 #[derive(Debug)]
-pub enum QuestionNError {
+pub enum CommandNError {
     InvalidTime,
 }
 
 
 #[derive(Debug)]
-pub enum QuestionUError {
+pub enum CommandUError {
     UserAlreadyExists,
-    InvalidUsername,
     TooManyUsers,
 }
 
 
 #[derive(Debug)]
-pub enum QuestionMError {
+pub enum CommandMError {
     NoSuchTask,
     TaskAlreadyStarted,
     NoSuchUser,
@@ -36,28 +35,34 @@ pub enum QuestionMError {
 
 
 #[derive(Debug)]
-pub enum QuestionDError {
+pub enum CommandDError {
     NoSuchActivity,
 }
 
 
 #[derive(Debug)]
-pub enum QuestionAError {
-    ActivityAlreadyExists,
-    InvalidDescription,
+pub enum CommandAError {
+    DuplicateActivity,
     TooManyActivity,
 }
 
 #[derive(Debug)]
 pub enum AppError {
-    ParseCommandError,
-    VerifyArgsError,
+    InvalidCommandError,
     // ---------------
-    QuestionT(QuestionTError),
-    QuestionL(QuestionLError),
-    QuestionN(QuestionNError),
-    QuestionU(QuestionUError),
-    QuestionM(QuestionMError),
-    QuestionD(QuestionDError),
-    QuestionA(QuestionAError),
+    TaskIdValueOutOfBounds,
+    TaskDescriptionLengthOutOfBounds,
+    UsernameLengthOutOfBounds,
+    ActivityNameLengthOutOfBounds,
+    ActivityNameInLowerCase,
+    ParseIntegerFailed,
+    // ---------------
+    CommandT(CommandTError),
+    CommandL(CommandLError),
+    CommandN(CommandNError),
+    CommandU(CommandUError),
+    CommandM(CommandMError),
+    CommandD(CommandDError),
+    CommandA(CommandAError),
 }
+
