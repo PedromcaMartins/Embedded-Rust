@@ -8,9 +8,9 @@ pub enum Command {
     Set{ path: Vec<String>, value: String },
     Print,
     Find{ path: Vec<String> },
-    List{ path: Vec<String> },
+    List{ path: Option<Vec<String>> },
     Search{ value: String },
-    Delete{ path: Vec<String> },
+    Delete{ path: Option<Vec<String>> },
 }
 
 impl FromStr for Command {
@@ -30,17 +30,23 @@ impl FromStr for Command {
             Some(&"find") if parts.len() == 2 => Ok(Command::Find{
                 path: parse_path(parts[1])?,
             }),
-            Some(&"list") if parts.len() == 2 => Ok(Command::List{
-                path: parse_path(parts[1])?,
+            Some(&"list") if parts.len() <= 2 => Ok(Command::List{
+                path: match parts.len() > 1 {
+                    true => Some(parse_path(parts[1])?),
+                    false => None,
+                },
             }),
             Some(&"search") if parts.len() >= 2 => Ok(Command::Search{ 
                 value: parts[1..].join(" "),
             }),
-            Some(&"delete") if parts.len() == 2 => Ok(Command::Delete{
-                path: parse_path(parts[1])?,
+            Some(&"delete") if parts.len() <= 2 => Ok(Command::Delete{
+                path: match parts.len() > 1 {
+                    true => Some(parse_path(parts[1])?),
+                    false => None,
+                },
             }),
-            Some(_) => Err(AppError::InvalidCommandError),
-            None => Err(AppError::InvalidCommandError),
+            Some(_) => Err(AppError::InvalidCommand),
+            None => Err(AppError::InvalidCommand),
         }
     }
 }
@@ -53,7 +59,7 @@ fn parse_path(path: &str) -> Result<Vec<String>, AppError> {
         .collect();
 
     if path.iter().any(|component| component.is_empty()) {
-        return Err(AppError::InvalidPathError)
+        return Err(AppError::InvalidPath)
     }
 
     Ok(path)

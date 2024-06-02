@@ -1,5 +1,10 @@
 #[derive(Debug)]
 pub enum AppError {
-    InvalidCommandError,
-    InvalidPathError,
+    InvalidCommand,
+    InvalidPath,
+    CommandFindPathNotFound,
+    CommandFindNoData,
+    CommandListPathNotFound,
+    CommandSearchPathNotFound,
+    CommandDeletePathNotFound,
 }
