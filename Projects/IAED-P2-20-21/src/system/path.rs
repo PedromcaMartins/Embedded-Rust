@@ -1,5 +1,3 @@
-use std::thread::panicking;
-
 #[derive(Debug)]
 pub struct Component {
     path: Vec<String>, 
