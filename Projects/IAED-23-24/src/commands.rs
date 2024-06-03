@@ -18,7 +18,7 @@ fn q() {
 
 /// Creates a parking lot with a billing system or lists existing parking lots
 ///
-/// Input format: `p [ <park-name> <capacity> <value-15> <value-15-after-1-hour> <value-max-daily> ]`
+/// Input format: `p [ <park-name> <capacity> <tariff-15-min-before-1-hour> <tariff-15-min-after-1-hour> <tariff-daily-max> ]`
 ///
 /// Output format without arguments: `<park-name> <capacity> <available-spots>`, in the order of creation of the parking lots.
 /// Output format with arguments: NONE

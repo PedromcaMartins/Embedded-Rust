@@ -1,3 +1,3 @@
 fn main() {
-    iaed_23_24::console::run();
+    iaed_23_24::run();
 }
