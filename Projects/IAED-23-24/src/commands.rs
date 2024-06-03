@@ -12,19 +12,18 @@
 /// ```text
 /// q
 /// ```
-fn q() {
+fn quit() {
 
 }
 
-/// Creates a parking lot with a billing system or lists existing parking lots
+/// Creates a parking lot with a billing system
 ///
-/// Input format: `p [ <park-name> <capacity> <tariff-15-min-before-1-hour> <tariff-15-min-after-1-hour> <tariff-daily-max> ]`
+/// Input format: `p <park-name> <capacity> <tariff-15-min-before-1-hour> <tariff-15-min-after-1-hour> <tariff-daily-max>`
 ///
-/// Output format without arguments: `<park-name> <capacity> <available-spots>`, in the order of creation of the parking lots.
-/// Output format with arguments: NONE
+/// Output format: NONE
 ///
-/// Note: The command can be used with or without arguments
-///
+/// Note: The command can be used with one or two arguments
+/// 
 /// Errors:
 /// - `<park-name>: parking already exists.` in case the parking lot name already exists.
 /// - `<capacity>: invalid capacity.` in case the capacity is less than or equal to 0.
@@ -36,13 +35,29 @@ fn q() {
 /// p Saldanha 200 0.20 0.30 12.00
 /// p "CC Colombo" 400 0.25 0.40 20.00
 /// ```
-fn p() {
+fn create_parking_lot() {
+
+}
+
+/// Lists existing parking lots
+///
+/// Input format: `p`
+///
+/// Output format: `<park-name> <capacity> <available-spots>`, in the order of creation of the parking lots.
+///
+/// Note: The command can be used with one or two arguments
+///
+/// # Example:
+/// ```text
+/// p
+/// ```
+fn list_parking_lots() {
 
 }
 
 /// Registers the entry of a vehicle
 ///
-/// Input format: `e <park-name> <licence-plate> <date> <hour>`
+/// Input format: `e <park-name> <licence-plate> <date> <time>`
 ///
 /// Output format: `<park-name> <available-spots>`
 ///
@@ -59,15 +74,15 @@ fn p() {
 /// ```text
 /// e Saldanha AA-00-AA 01-03-2024 08:34
 /// ```
-fn e() {
+fn register_vehicle_entry() {
 
 }
 
 /// Registers the exit of a vehicle
 ///
-/// Input format: `s <park-name> <licence-plate> <date> <hour>`
+/// Input format: `s <park-name> <licence-plate> <date> <time>`
 ///
-/// Output format: `<licence-plate> <date-entrance> <hour-entrance> <date-exit> <hour-exit> <value-paid>`
+/// Output format: `<licence-plate> <date-entrance> <time-entrance> <date-exit> <time-exit> <value-paid>`
 ///
 /// Note: This command requires all parameters to be valid
 ///
@@ -81,7 +96,7 @@ fn e() {
 /// ```text
 /// s Saldanha AA-00-AA 01-03-2024 10:59
 /// ```
-fn s() {
+fn register_vehicle_exit() {
 
 }
 
@@ -89,7 +104,7 @@ fn s() {
 ///
 /// Input format: `v <licence-plate>`
 ///
-/// Output format: `<park-name> <date-entrance> <hour-entrance> <date-exit> <hour-exit>`, ordered first by parking lot name and then by entry date and time. If the vehicle is inside a parking lot, the exit date and time associated with that entry are not shown.
+/// Output format: `<park-name> <date-entrance> <time-entrance> <date-exit> <time-exit>`, ordered first by parking lot name and then by entry date and time. If the vehicle is inside a parking lot, the exit date and time associated with that entry are not shown.
 ///
 /// Note: This command requires a valid license plate
 ///
@@ -101,16 +116,34 @@ fn s() {
 /// ```text
 /// v AA-00-AA
 /// ```
-fn v() {
+fn list_vehicle_log_entries_exits() {
 
 }
 
 /// Shows the billing of a parking lot
 ///
-/// Input format: `f <park-name> [ <date> ]`
+/// Input format: `f <park-name>`
 ///
-/// Output format with one argument: `<date> <value-bill>`, ordered by date. This option shows the daily billing summary of the parking lot.
-/// Output format with two arguments: `<licence-plate> <hour-exit> <value-paid>`, ordered by exit date. This option shows the list of billed amounts on a specific day.
+/// Output format: `<date> <value-bill>`, ordered by date. This option shows the daily billing summary of the parking lot.
+///
+/// Note: The command can be used with one or two arguments
+///
+/// Errors:
+/// - `<park-name>: no such parking.` in case the parking lot name does not exist.
+///
+/// # Example:
+/// ```text
+/// f Saldanha
+/// ```
+fn show_parking_lot_billing() {
+
+}
+
+/// Shows the billing of a parking lot on a specific date
+///
+/// Input format: `f <park-name> <date>`
+///
+/// Output format: `<licence-plate> <time-exit> <value-paid>`, ordered by exit date. This option shows the list of billed amounts on a specific day.
 ///
 /// Note: The command can be used with one or two arguments
 ///
@@ -120,10 +153,9 @@ fn v() {
 ///
 /// # Example:
 /// ```text
-/// f Saldanha
 /// f Saldanha 01-03-2024
 /// ```
-fn f() {
+fn show_parking_lot_billing_specific_date() {
 
 }
 
@@ -142,6 +174,6 @@ fn f() {
 /// ```text
 /// r "CC Colombo"
 /// ```
-fn r() {
+fn remove_parking_lot() {
 
 }

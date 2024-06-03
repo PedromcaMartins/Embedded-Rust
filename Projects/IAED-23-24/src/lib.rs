@@ -1,4 +1,7 @@
 mod console;
+mod parser;
+mod error;
+mod parking_lot;
 
 pub use console::run;
 
