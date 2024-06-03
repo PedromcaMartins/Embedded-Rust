@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, world!");
+    iaed_23_24::console::run();
 }

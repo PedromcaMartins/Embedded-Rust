@@ -10,10 +10,10 @@ pub fn run() {
         let line = read_line();
 
         match line.parse::<Command>() {
-            Err(err) => println!("{:?}", err),
+            Err(err) => println!("{}", err),
             Ok(command) => {
                 if let Err(err) = system.execute(command) {
-                    println!("{:?}", err);
+                    println!("{}", err);
                 }
             },
         };
