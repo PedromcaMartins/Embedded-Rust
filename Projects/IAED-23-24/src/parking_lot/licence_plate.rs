@@ -2,9 +2,23 @@ use std::{fmt::Display, str::FromStr};
 
 use crate::error::AppError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct LicencePlate {
     plate: String,
+}
+
+impl LicencePlate {
+    pub fn get_licence_plate(&self) -> &String {
+        &self.plate
+    }
+
+    pub fn eq(&self, other: &LicencePlate) -> bool {
+        self.plate.eq(other.get_licence_plate())
+    }
+
+    pub fn ne(&self, other: &LicencePlate) -> bool {
+        self.plate.ne(other.get_licence_plate())
+    }
 }
 
 impl FromStr for LicencePlate {
@@ -38,7 +52,7 @@ impl FromStr for LicencePlate {
             }
         }
 
-        Err(AppError::InvalidLicencePlate)
+        Err(AppError::InvalidLicencePlate { licence_plate: s.to_owned() })
     }
 }
 

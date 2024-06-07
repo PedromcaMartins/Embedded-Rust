@@ -1,0 +1,13 @@
+p parkname 10 0.25 0.30 15 
+
+e parkname AA-AA-00 01-01-2000 08:00
+s parkname AA-AA-00 04-01-2000 23:00
+
+e parkname AA-AA-00 01-01-2000 10:00
+s parkname AA-AA-00 01-01-2000 12:00
+
+v AA-AA-00
+
+f parkname
+
+f parkname 01-01-2000

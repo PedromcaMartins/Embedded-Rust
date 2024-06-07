@@ -1,15 +1,49 @@
-use std::{fmt::Display, str::FromStr};
+use std::{cmp::Ordering, fmt::Display, str::FromStr};
 
-use crate::error::AppError;
+use crate::{error::AppError, LOOKUP_TABLE_LAST_DAY_GIVEN_MONTH, RANGE_VALID_MONTHS, RANGE_VALID_YEARS};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Date {
     day: i32,
     month: i32,
     year: i32,
 }
-///                                                 inv jan feb mar apr may jun jul aug sept oct nov dec
-const LOOKUP_TABLE_LAST_DAY_GIVEN_MONTH: [i32; 13] = [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+impl Date {
+    pub fn get_day(&self) -> i32 {
+        self.day
+    }
+    
+    pub fn get_month(&self) -> i32 {
+        self.month
+    }
+    
+    pub fn get_year(&self) -> i32 {
+        self.year
+    }
+
+    pub fn cmp(&self, other: &Date) -> Ordering {
+        match self.year.cmp(&other.year) {
+            std::cmp::Ordering::Equal => {
+                match self.month.cmp(&other.month) {
+                    std::cmp::Ordering::Equal => self.day.cmp(&other.day),
+                    ord => ord,
+                }
+            },
+            ord => ord,
+        }
+    }
+}
+
+impl Default for Date {
+    fn default() -> Self {
+        Self {
+            day: 1,
+            month: 1,
+            year: RANGE_VALID_YEARS.start
+        }
+    }
+}
 
 impl FromStr for Date {
     type Err = AppError;
@@ -22,9 +56,9 @@ impl FromStr for Date {
             let month = parse_i32(month)?;
             let year = parse_i32(year)?;
 
-            if (1..12+1).contains(&month) 
-            && (1..LOOKUP_TABLE_LAST_DAY_GIVEN_MONTH[month as usize]+1).contains(&day) 
-            && (2_000..2_100).contains(&year) {
+            if RANGE_VALID_MONTHS.contains(&month) 
+            && (1..get_num_days_for_mounth(month)).contains(&day) 
+            && RANGE_VALID_YEARS.contains(&year) {
                 return Ok(Date {
                     day,
                     month,
@@ -38,15 +72,15 @@ impl FromStr for Date {
 }
 
 fn parse_i32(s: &str) -> Result<i32, AppError> {
-    match s.parse::<i32>() {
-        Ok(integer) => Ok(integer),
-        Err(_) => Err(AppError::InvalidTime),
-    }
+    s.parse::<i32>().map_err(|_| AppError::InvalidDate)
 }
-
 
 impl Display for Date {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}-{}-{}", self.day, self.month, self.year)
+        write!(f, "{:0>2}-{:0>2}-{:0>4}", self.day, self.month, self.year)
     }
+}
+
+pub fn get_num_days_for_mounth(month: i32) -> i32 {
+    LOOKUP_TABLE_LAST_DAY_GIVEN_MONTH[month as usize]
 }

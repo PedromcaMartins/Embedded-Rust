@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use crate::{error::AppError, parking_lot::{Date, LicencePlate, Tariff, Time}};
 
-
 #[derive(Debug)]
 pub enum Command {
     /// Input format: `q`
@@ -41,7 +40,6 @@ pub enum Command {
     RemoveParkingLot { park_name: String }
 }
 
-
 impl FromStr for Command {
     type Err = AppError;
 
@@ -53,7 +51,7 @@ impl FromStr for Command {
             Some(&"q") if parts.len() == 1 => Ok(Command::Quit),
             Some(&"p") if parts.len() >= 6 => Ok(Command::CreateParkingLot { 
                 park_name: parts[1..parts.len()-4].join(" "), 
-                capacity: parts[parts.len()-4].parse::<i32>()?, 
+                capacity: parts[parts.len()-4].parse::<i32>().map_err(|_| AppError::ParserInt)?, 
                 tariff_x: parts[parts.len()-3].parse::<Tariff>()?, 
                 tariff_y: parts[parts.len()-2].parse::<Tariff>()?, 
                 tariff_z: parts[parts.len()-1].parse::<Tariff>()?, 
@@ -83,7 +81,6 @@ impl FromStr for Command {
         }
     }
 }
-
 
 fn parse_args_command_f(s: &str) -> Result<Command, AppError> {
     let mut parts = s.splitn(3, '"');

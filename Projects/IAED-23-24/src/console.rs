@@ -1,18 +1,21 @@
 use std::io;
 
-use crate::parser::Command;
+use crate::{parser::Command, system::System};
 
 pub fn run() {
     println!("Welcome to IAED 23/24 Project: Parking Lots Management System. Here are the available commands.");
     print_commands();
+
+    let mut system = System::new();
 
     loop {
         let line = read_line();
         match line.parse::<Command>() {
             Err(err) => println!("{:#?}", err),
             Ok(command) => {
-                println!("{:#?}", command);
-                // execute command
+                if let Err(err) = system.execute(command) {
+                    println!("{:#?}", err);
+                }
             },
         }
     }
