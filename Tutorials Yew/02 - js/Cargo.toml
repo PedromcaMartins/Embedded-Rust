@@ -1,0 +1,10 @@
+[package]
+name = "default"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+yew = { version = "0.21.0", features = ["csr"] }
+wasm-logger = "0.2.0"
+log = "0.4.6"
+gloo-dialogs = "0.2.0"
