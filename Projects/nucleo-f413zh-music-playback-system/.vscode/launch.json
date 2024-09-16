@@ -1,0 +1,40 @@
+{
+  "configurations": [
+    {
+      "chip": "STM32F413ZHJx",
+      "connectUnderReset": true,
+      "coreConfigs": [
+        {
+          "coreIndex": 0,
+          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabi/debug/nucleo-f413zh-music-playback-system",
+          "rttChannelFormats": [
+            {
+              "channelNumber": 0,
+              "dataFormat": "String",
+              "showTimestamps": true
+            },
+            {
+              "channelNumber": 1,
+              "dataFormat": "BinaryLE"
+            }
+          ],
+          "rttEnabled": true
+        }
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "DEFMT_LOG": "debug",
+        "RUST_LOG": "debug"
+      },
+      "flashingConfig": {
+        "flashingEnabled": true,
+        "haltAfterReset": true
+      },
+      "name": "probe-rs Test",
+      "preLaunchTask": "${defaultBuildTask}",
+      "request": "launch",
+      "type": "probe-rs-debug"
+    }
+  ],
+  "version": "0.2.0"
+}
