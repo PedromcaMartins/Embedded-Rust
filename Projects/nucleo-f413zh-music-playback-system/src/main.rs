@@ -25,18 +25,18 @@ async fn main(_spawner: Spawner) {
     let p = embassy_stm32::init(Default::default());
     let io_mapping = IOMapping::init(p);
 
-    let button = Button::init(
+    // let button = Button::new_polling(
+    //     io_mapping.playback_pause_play_button, 
+    //     io_mapping.playback_pause_play_button_default_level
+    // );
+    let mut button = Button::new_interrupt(
         io_mapping.playback_pause_play_button, 
         io_mapping.playback_pause_play_button_default_level
     );
-    let mut led = Led::init(
-        io_mapping.playback_status_led, 
-        io_mapping.playback_status_led_default_level
-    );
 
 
-    button.test();
-    led.test();
+    button.test_polling();
+    button.test_interrupt().await;
 
     loop {
 
