@@ -40,7 +40,7 @@ incremental = true
 defmt = ["dep:defmt"]
 defmt-rtt = ["dep:defmt-rtt"]
 panic-probe = ["dep:panic-probe"]
-default = ["debug", "io_mapping_v1"]
+default = ["debug", "io_mapping_v3"]
 debug = [
     "defmt",
     "defmt-rtt",
@@ -53,3 +53,5 @@ debug = [
     "embassy-stm32/defmt",
 ]
 io_mapping_v1 = []
+io_mapping_v2 = []
+io_mapping_v3 = []

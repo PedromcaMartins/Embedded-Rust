@@ -8,7 +8,7 @@ pub struct Led<'d, T: Pin> {
 }
 
 impl<'d, T: Pin> Led<'d, T> {
-    pub fn init(output: Output<'d, T>, default_level: Level) -> Self {
+    pub fn new(output: Output<'d, T>, default_level: Level) -> Self {
         Self { 
             output, 
             default_level 
