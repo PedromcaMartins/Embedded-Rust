@@ -23,7 +23,7 @@ use drivers::{AdcManager, Button, Led, Potentiometer};
 async fn main(_spawner: Spawner) {
     info!("Hello, World!");
 
-    let p = embassy_stm32::init(Default::default());
+    let _p = embassy_stm32::init(Default::default());
 
-    panic!()
+    panic!();
 }
