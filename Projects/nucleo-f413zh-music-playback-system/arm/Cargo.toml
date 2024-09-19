@@ -4,6 +4,7 @@
 edition = "2021"
 name = "arm"
 version = "0.1.0"
+autobins = false
 
 [dependencies]
 shared-lib = { path = "../shared-lib" }
@@ -20,9 +21,12 @@ embassy-time = { version = "0.3.2", features = ["tick-hz-32_768"] }
 embedded-io-async = "0.6.1"
 panic-halt = "0.2.0"
 panic-probe = { version = "0.3.2", features = ["print-defmt"], optional = true }
+defmt-test = "0.3.2"
 
 [[bin]]
 name = "arm"
+path = "src/bin/main.rs"
+edition = "2021"
 test = false
 bench = false
 
@@ -42,7 +46,7 @@ incremental = true
 defmt = ["dep:defmt"]
 defmt-rtt = ["dep:defmt-rtt"]
 panic-probe = ["dep:panic-probe"]
-default = ["debug", "io_mapping_v3"]
+default = ["debug", "io_mapping_v4"]
 debug = [
     "defmt",
     "defmt-rtt",
@@ -57,3 +61,20 @@ debug = [
 io_mapping_v1 = []
 io_mapping_v2 = []
 io_mapping_v3 = []
+io_mapping_v4 = []
+
+
+# ---------------------------------- tests --------------------------------- 
+
+# for the library crate (src/lib.rs)
+[lib]
+path = "src/lib/lib.rs"
+harness = false
+edition = "2021"
+crate-type = ["rlib"]
+
+# for each crate in the `tests` directory
+# [[test]]
+# name = "test-name" # tests/test-name.rs
+# harness = false
+

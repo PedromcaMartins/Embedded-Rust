@@ -4,7 +4,7 @@ use defmt::info;
 use embassy_stm32::adc::{self, AdcPin};
 use embassy_time::{Duration, Instant};
 
-use crate::percentage::Percentage;
+use shared_lib::Percentage;
 
 use super::AdcManager;
 

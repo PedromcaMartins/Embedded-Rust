@@ -4,6 +4,8 @@ mod io_mapping_v1;
 mod io_mapping_v2;
 #[allow(unused)]
 mod io_mapping_v3;
+#[allow(unused)]
+mod io_mapping_v4;
 
 #[cfg(feature = "io_mapping_v1")]
 pub use io_mapping_v1::IOMapping;
@@ -13,3 +15,6 @@ pub use io_mapping_v2::IOMapping;
 
 #[cfg(feature = "io_mapping_v3")]
 pub use io_mapping_v3::IOMapping;
+
+#[cfg(feature = "io_mapping_v4")]
+pub use io_mapping_v4::*;
