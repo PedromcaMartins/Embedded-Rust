@@ -1,8 +1,8 @@
 [workspace]
 members = [
     "shared-lib",
-    "arm",
-    "host"
+    "arm-firmware",
+    "host-tests"
 ]
 
 resolver = "2"
