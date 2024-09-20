@@ -1,0 +1,3 @@
+{
+    "rust-analyzer.linkedProjects": ["arm/Cargo.toml", "host/Cargo.toml", "shared-lib/Cargo.toml"]
+}

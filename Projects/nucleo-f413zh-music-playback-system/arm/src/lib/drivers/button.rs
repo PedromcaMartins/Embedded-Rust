@@ -1,6 +1,5 @@
 use core::marker::PhantomData;
 
-use defmt::info;
 use embassy_stm32::gpio::Pin;
 use embassy_time::Duration;
 use embassy_time::Instant;
@@ -42,34 +41,34 @@ impl<'d, T: Pin, M: ButtonMode> Button<'d, T, M> {
     pub fn test_polling(&self) {
         let mut passed = true;
 
-        info!("Initiating Button Pooling Unit Test");
+        crate::test!("Initiating Button Pooling Unit Test");
 
         if !self.test_pooling_pressed_down() {
-            info!("test_pooling_pressed_down failed");
+            crate::test!("test_pooling_pressed_down failed");
             passed = false;
         }
 
         match passed {
-            true => info!("Test passed"),
-            false => info!("Test failed"),
+            true => crate::test!("Test passed"),
+            false => crate::test!("Test failed"),
         }
     }
 
     fn test_pooling_pressed_down(&self) -> bool {
-        info!("Please release the button");
+        crate::test!("Please release the button");
         while !self.is_released(){};
 
-        info!("Please press the button");
+        crate::test!("Please press the button");
         while !self.is_pressed_down(){};
 
-        info!("Please release the button");
+        crate::test!("Please release the button");
         while !self.is_released(){};
 
         let start = Instant::now();
         let timeout = Duration::from_millis(150);
         while Instant::now() - start < timeout {
             if self.is_pressed_down() {
-                info!("Error: unexpected button pressed after instructed release");
+                crate::test!("Error: unexpected button pressed after instructed release");
                 return false
             }
         }
@@ -83,34 +82,34 @@ impl<'d, T: Pin, M: InterruptMode> Button<'d, T, M> {
     pub async fn test_interrupt(&mut self) {
         let mut passed = true;
 
-        info!("Initiating Button Interrupt Unit Test");
+        crate::test!("Initiating Button Interrupt Unit Test");
 
         if !self.test_interrupt_pressed_down().await {
-            info!("test_interrupt_pressed_down failed");
+            crate::test!("test_interrupt_pressed_down failed");
             passed = false;
         }
 
         match passed {
-            true => info!("Test passed"),
-            false => info!("Test failed"),
+            true => crate::test!("Test passed"),
+            false => crate::test!("Test failed"),
         }
     }
 
     async fn test_interrupt_pressed_down(&mut self) -> bool {
-        info!("Please release the button");
+        crate::test!("Please release the button");
         self.wait_for_release().await;
 
-        info!("Please press the button");
+        crate::test!("Please press the button");
         self.wait_for_press_down().await;
 
-        info!("Please release the button");
+        crate::test!("Please release the button");
         self.wait_for_release().await;
 
         let start = Instant::now();
         let timeout = Duration::from_millis(150);
         while Instant::now() - start < timeout {
             if self.is_pressed_down() {
-                info!("Error: unexpected button pressed after instructed release");
+                crate::test!("Error: unexpected button pressed after instructed release");
                 return false
             }
         }

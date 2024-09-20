@@ -3,10 +3,11 @@
 #![cfg_attr(feature = "debug", allow(unused))]
 
 pub mod fmt;
-pub use fmt::*;
 pub mod drivers;
 pub mod io_mapping;
-pub mod logger;
+pub mod noop_waker;
+
+pub use fmt::*;
 
 use cortex_m_semihosting::debug;
 
@@ -35,29 +36,10 @@ pub fn exit() -> ! {
 /// Terminates the application and makes a semihosting-capable debug tool exit
 /// with an error. This seems better than the default, which is to spin in a
 /// loop.
+#[allow(non_snake_case)]
 #[cortex_m_rt::exception]
 unsafe fn HardFault(_frame: &cortex_m_rt::ExceptionFrame) -> ! {
     loop {
         debug::exit(debug::EXIT_FAILURE);
-    }
-}
-
-// defmt-test 0.3.0 has the limitation that this `#[tests]` attribute can only be used
-// once within a crate. the module can be in any file but there can only be at most
-// one `#[tests]` module in this library crate
-#[cfg(test)]
-#[defmt_test::tests]
-mod unit_tests {
-    use defmt::assert;
-    use embassy_stm32::Peripherals;
-
-    #[init]
-    fn init() -> Peripherals {
-        embassy_stm32::init(Default::default())
-    }
-
-    #[test]
-    fn it_works(p: &mut Peripherals) {
-        assert!(true)
     }
 }

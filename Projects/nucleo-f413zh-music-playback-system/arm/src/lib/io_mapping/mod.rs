@@ -1,11 +1,11 @@
-#[allow(unused)]
+#![allow(unused)]
+mod io_mapping_test;
 mod io_mapping_v1;
-#[allow(unused)]
 mod io_mapping_v2;
-#[allow(unused)]
 mod io_mapping_v3;
-#[allow(unused)]
 mod io_mapping_v4;
+
+pub use io_mapping_test::IOMappingTest;
 
 #[cfg(feature = "io_mapping_v1")]
 pub use io_mapping_v1::IOMapping;

@@ -1,8 +1,12 @@
 # This file was automatically generated.
 
-[target.thumbv7em-none-eabihf]
-runner = 'probe-rs run --chip STM32F413ZHJx --connect-under-reset'
-# runner = ["probe-rs", "run", "--chip", "STM32F413ZHJx", "--connect-under-reset", "--log-format", "{L} {s}"]
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = [
+  "probe-rs", "run", 
+  "--chip", "STM32F413ZHJx", 
+  "--connect-under-reset", 
+  "--log-format", "[{t} {L:>1} {F}:{l:>0}] {s}"
+]
 
 rustflags = [
   "-C", "link-arg=-Tlink.x",
@@ -11,6 +15,10 @@ rustflags = [
   # See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
   "-C", "link-arg=--nmagic",
 ]
+
+[term]
+# Control whether colored output is shown
+color = "always"
 
 [build]
 target = "thumbv7em-none-eabihf"
@@ -21,3 +29,11 @@ DEFMT_LOG = "trace"
 [unstable]
 build-std = ["core"]
 build-std-features = ["panic_immediate_abort"]
+
+[alias]
+b =   "build"
+br =  "build --release"
+c =   "clean"
+r =   "run --package arm"
+rr =  "run --release --package arm"
+t =   "test --package arm --no-fail-fast --tests -- --show-output --nocapture"

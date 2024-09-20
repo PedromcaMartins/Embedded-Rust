@@ -17,9 +17,8 @@ use arm::io_mapping::IOMapping;
 use arm::info;
 
 #[embassy_executor::main]
-async fn main(spawner: Spawner) {
+async fn main(_spawner: Spawner) {
     let p = embassy_stm32::init(Default::default());
     let _io_mapping = IOMapping::init(p);
-
     info!("hello world!");
 }
