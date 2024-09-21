@@ -9,3 +9,6 @@ pub use potentiometer::*;
 
 mod adc_manager;
 pub use adc_manager::*;
+
+mod pc_uart;
+pub use pc_uart::*;

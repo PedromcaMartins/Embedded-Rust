@@ -12,3 +12,6 @@ pub use adc_manager_driver::*;
 
 mod potentiometer_driver;
 pub use potentiometer_driver::*;
+
+mod uart_driver;
+pub use uart_driver::*;
