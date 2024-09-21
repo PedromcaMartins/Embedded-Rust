@@ -13,12 +13,19 @@ use shared_lib::traits::ButtonDriverPolling;
 mod polling_mode;
 mod interrupt_mode;
 
-pub struct Button<'d, T: Pin, Mode> {
+pub struct Button<'d, T, Mode>
+where
+    T: Pin
+{
     input: Mode,
     _pin: PhantomData<&'d T>, // keeps the lifetime around
 }
 
-impl<'d, T: Pin, M: ButtonMode> ButtonDriverPolling for Button<'d, T, M> {
+impl<'d, T, M> ButtonDriverPolling for Button<'d, T, M>
+where 
+    T: Pin,
+    M: ButtonMode
+{
     fn is_pressed_down(&self) -> bool {
         self.input.is_pressed_down()
     }
@@ -28,7 +35,11 @@ impl<'d, T: Pin, M: ButtonMode> ButtonDriverPolling for Button<'d, T, M> {
     }
 }
 
-impl<'d, T: Pin, M: InterruptMode> ButtonDriverInterrupt for Button<'d, T, M> {
+impl<'d, T, M> ButtonDriverInterrupt for Button<'d, T, M> 
+where 
+    T: Pin,
+    M: InterruptMode
+{
     async fn wait_for_press_down(&mut self) {
         self.input.wait_for_press_down().await
     }
@@ -39,7 +50,11 @@ impl<'d, T: Pin, M: InterruptMode> ButtonDriverInterrupt for Button<'d, T, M> {
 }
 
 
-impl<'d, T: Pin, M: ButtonMode> Button<'d, T, M> {
+impl<'d, T, M> Button<'d, T, M>
+where 
+    T: Pin,
+    M: ButtonMode
+{
     pub fn test_polling(&self) {
         let mut passed = true;
 
@@ -80,7 +95,11 @@ impl<'d, T: Pin, M: ButtonMode> Button<'d, T, M> {
 }
 
 
-impl<'d, T: Pin, M: InterruptMode> Button<'d, T, M> {
+impl<'d, T, M> Button<'d, T, M>
+where 
+    T: Pin,
+    M: InterruptMode
+{
     pub async fn test_interrupt(&mut self) {
         let mut passed = true;
 

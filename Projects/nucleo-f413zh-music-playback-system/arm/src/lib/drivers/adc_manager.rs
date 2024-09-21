@@ -3,11 +3,21 @@ use shared_lib::traits::AnalogInput;
 
 pub static ADC_RESOLUTION: Resolution = Resolution::TwelveBit;
 
-pub struct AdcManager<'d, T: adc::Instance> {
+/* -------------------------------------------------------------------------- */
+/*                                 Adc Manager                                */
+/* -------------------------------------------------------------------------- */
+
+pub struct AdcManager<'d, T>
+where
+    T: adc::Instance
+{
     adc: Adc<'d, T>,
 }
 
-impl<'d, T: adc::Instance> AdcManager<'d, T> {
+impl<'d, T> AdcManager<'d, T>
+where
+    T: adc::Instance
+{
     pub fn new(mut adc: Adc<'d, T>) -> Self {
         adc.set_resolution(ADC_RESOLUTION);
 
@@ -25,13 +35,25 @@ impl<'d, T: adc::Instance> AdcManager<'d, T> {
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                Adc Pin Input                               */
+/* -------------------------------------------------------------------------- */
+
 // Implement AnalogInput for any type of AdcPin (internally used)
-pub struct AdcPinInput<'a, 'b, P: AdcPin<T>, T: adc::Instance> {
+pub struct AdcPinInput<'a, 'b, T, P> 
+where 
+    T: adc::Instance,
+    P: AdcPin<T>
+{
     pin: &'a mut P,
     adc_manager: &'a mut AdcManager<'b, T>,
 }
 
-impl<'a, 'b, P: AdcPin<T>, T: adc::Instance> AdcPinInput<'a, 'b, P, T> {
+impl<'a, 'b, T, P> AdcPinInput<'a, 'b, T, P> 
+where 
+    T: adc::Instance,
+    P: AdcPin<T>
+{
     pub fn new(pin: &'a mut P, adc_manager: &'a mut AdcManager<'b, T>) -> Self {
         Self {
             pin,
@@ -40,14 +62,22 @@ impl<'a, 'b, P: AdcPin<T>, T: adc::Instance> AdcPinInput<'a, 'b, P, T> {
     }
 }
 
-impl<'a, 'b, P: AdcPin<T>, T: adc::Instance> AnalogInput for AdcPinInput<'a, 'b, P, T> {
+impl<'a, 'b, T, P> AnalogInput for AdcPinInput<'a, 'b, T, P> 
+where 
+    T: adc::Instance,
+    P: AdcPin<T>
+{
     fn read_value(&mut self) -> u16 {
         self.adc_manager.read_pin(self.pin)
     }
 }
 
 
-impl<'a, 'b, P: AdcPin<T>, T: adc::Instance> AdcPinInput<'a, 'b, P, T> {
+impl<'a, 'b, T, P> AdcPinInput<'a, 'b, T, P> 
+where 
+    T: adc::Instance,
+    P: AdcPin<T>
+{
     pub fn test(&mut self) {
         crate::test!("Initiating Adc Manager Unit Test");
 
