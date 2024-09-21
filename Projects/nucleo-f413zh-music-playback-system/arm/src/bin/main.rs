@@ -6,13 +6,13 @@ use panic_halt as _;
 #[cfg(feature = "defmt")]
 use {defmt_rtt as _, panic_probe as _};
 
-mod timer;
 mod spawner;
+mod timer;
 
 use embassy_executor::Spawner;
 
-use arm::io_mapping::IOMapping;
 use arm::info;
+use arm::io_mapping::IOMapping;
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {

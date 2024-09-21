@@ -1,8 +1,4 @@
 [workspace]
-members = [
-    "shared-lib",
-    "arm",
-    "host"
-]
+members = ["shared-lib", "arm", "host"]
 
 resolver = "2"
