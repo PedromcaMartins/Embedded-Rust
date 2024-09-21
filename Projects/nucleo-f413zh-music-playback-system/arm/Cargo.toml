@@ -77,16 +77,20 @@ crate-type = ["rlib"]
 # for each crate in the `tests` directory
 [[test]]
 name = "test_driver_led"
+path = "tests/drivers/test_driver_led.rs"
 harness = false
 
 [[test]]
 name = "test_driver_potentiometer"
+path = "tests/drivers/test_driver_potentiometer.rs"
 harness = false
 
 [[test]]
 name = "test_driver_button" 
+path = "tests/drivers/test_driver_button.rs"
 harness = false
 
 [[test]]
 name = "test_driver_adc_manager" 
+path = "tests/drivers/test_driver_adc_manager.rs"
 harness = false
