@@ -8,18 +8,19 @@ use {defmt_rtt as _, panic_probe as _};
 
 // See https://crates.io/crates/defmt-test/0.3.0 for more documentation (e.g. about the 'state' feature)
 #[defmt_test::tests]
-mod test_driver_button {
-    use arm::{drivers::Button, io_mapping::IOMappingTest, noop_waker::poll_future};
+mod test_driver_adc_manager {
+    use arm::{drivers::{AdcManager, AdcPinInput}, io_mapping::IOMappingTest};
 
     #[test]
-    fn test_driver_button() {
+    fn test_driver_adc_manager() {
         let p = embassy_stm32::init(Default::default());
         let io_mapping = IOMappingTest::init(p);
 
-        let mut button = Button::new_interrupt(io_mapping.button, io_mapping.button_default_level);
+        let mut adc_manager = AdcManager::new(io_mapping.potentiometer_adc);
+        let mut pin = io_mapping.potentiometer_pin;
 
-        button.test_polling();
-        let mut future = button.test_interrupt();
-        poll_future(&mut future);
+        let mut adc_pin_input = AdcPinInput::new(&mut pin, &mut adc_manager);
+
+        adc_pin_input.test();
     }
 }

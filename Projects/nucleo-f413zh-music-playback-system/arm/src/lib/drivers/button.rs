@@ -7,31 +7,33 @@ use embassy_time::Instant;
 mod button_mode;
 pub use button_mode::ButtonMode;
 pub use button_mode::InterruptMode;
+use shared_lib::traits::ButtonDriverInterrupt;
+use shared_lib::traits::ButtonDriverPolling;
 
 mod polling_mode;
 mod interrupt_mode;
- 
+
 pub struct Button<'d, T: Pin, Mode> {
     input: Mode,
     _pin: PhantomData<&'d T>, // keeps the lifetime around
 }
 
-impl<'d, T: Pin, M: ButtonMode> Button<'d, T, M> {
-    pub fn is_pressed_down(&self) -> bool {
+impl<'d, T: Pin, M: ButtonMode> ButtonDriverPolling for Button<'d, T, M> {
+    fn is_pressed_down(&self) -> bool {
         self.input.is_pressed_down()
     }
 
-    pub fn is_released(&self) -> bool {
+    fn is_released(&self) -> bool {
         self.input.is_released()
     }
 }
 
-impl<'d, T: Pin, M: InterruptMode> Button<'d, T, M> {
-    pub async fn wait_for_press_down(&mut self) {
+impl<'d, T: Pin, M: InterruptMode> ButtonDriverInterrupt for Button<'d, T, M> {
+    async fn wait_for_press_down(&mut self) {
         self.input.wait_for_press_down().await
     }
 
-    pub async fn wait_for_release(&mut self) {
+    async fn wait_for_release(&mut self) {
         self.input.wait_for_release().await
     }
 }
@@ -41,10 +43,10 @@ impl<'d, T: Pin, M: ButtonMode> Button<'d, T, M> {
     pub fn test_polling(&self) {
         let mut passed = true;
 
-        crate::test!("Initiating Button Pooling Unit Test");
+        crate::test!("Initiating Button Polling Unit Test");
 
-        if !self.test_pooling_pressed_down() {
-            crate::test!("test_pooling_pressed_down failed");
+        if !self.test_polling_pressed_down() {
+            crate::test!("test_polling_pressed_down failed");
             passed = false;
         }
 
@@ -54,7 +56,7 @@ impl<'d, T: Pin, M: ButtonMode> Button<'d, T, M> {
         }
     }
 
-    fn test_pooling_pressed_down(&self) -> bool {
+    fn test_polling_pressed_down(&self) -> bool {
         crate::test!("Please release the button");
         while !self.is_released(){};
 

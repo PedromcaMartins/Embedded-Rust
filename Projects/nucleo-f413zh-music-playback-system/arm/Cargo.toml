@@ -87,3 +87,6 @@ harness = false
 name = "test_driver_button" 
 harness = false
 
+[[test]]
+name = "test_driver_adc_manager" 
+harness = false

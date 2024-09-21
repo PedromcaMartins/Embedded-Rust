@@ -10,9 +10,7 @@ mod timer;
 mod spawner;
 
 use embassy_executor::Spawner;
-use timer::EmbassyTimer;
 
-use shared_lib::tasks::LedTask;
 use arm::io_mapping::IOMapping;
 use arm::info;
 

@@ -1,5 +1,6 @@
 use embassy_stm32::gpio::{Level, Output, Pin};
 use embassy_time::{Duration, Instant};
+use shared_lib::traits::LedDriver;
 
 pub struct Led<'d, T: Pin> {
     output: Output<'d, T>,
@@ -13,19 +14,21 @@ impl<'d, T: Pin> Led<'d, T> {
             default_level 
         }
     }
+}
 
-    pub fn toggle(&mut self) {
+impl<'d, T: Pin> LedDriver for Led<'d, T> {
+    fn toggle(&mut self) {
         self.output.toggle();
     }
 
-    pub fn turn_on(&mut self) {
+    fn turn_on(&mut self) {
         match self.default_level {
             Level::High => self.output.set_low(),
             Level::Low => self.output.set_high()
         }
     }
 
-    pub fn turn_off(&mut self) {
+    fn turn_off(&mut self) {
         self.output.set_level(self.default_level);
     }
 }
