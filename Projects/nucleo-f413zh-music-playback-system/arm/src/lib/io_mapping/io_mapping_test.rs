@@ -10,6 +10,7 @@ use embassy_stm32::peripherals::PA3;
 use embassy_stm32::peripherals::PB7;
 use embassy_stm32::peripherals::PC13;
 use embassy_stm32::usart;
+use embassy_stm32::usart::Uart;
 use embassy_time::Delay;
 
 mod types {
@@ -30,17 +31,17 @@ mod types {
     pub type PotentiometerAdc = ADC1;
     pub type PotentiometerPin = PA3;
     
-    pub type PCUart = USART3;
-    pub type PCUartRxPin = PC11;
-    pub type PCUartRxDma = DMA1_CH1;
-    pub type PCUartTxPin = PC10;
-    pub type PCUartTxDma = DMA1_CH3;
+    pub type UartWrapper = USART3;
+    pub type UartWrapperRxPin = PC11;
+    pub type UartWrapperRxDma = DMA1_CH1;
+    pub type UartWrapperTxPin = PC10;
+    pub type UartWrapperTxDma = DMA1_CH3;
 }
 
 use types::*;
 
 bind_interrupts!(pub struct Irqs {
-    USART3 => usart::InterruptHandler<PCUart>;
+    USART3 => usart::InterruptHandler<UartWrapper>;
 });
 
 pub struct IOMappingTest<'d> {
@@ -50,6 +51,7 @@ pub struct IOMappingTest<'d> {
     pub button_default_level: gpio::Level,
     pub potentiometer_adc: Adc<'d, PotentiometerAdc>,
     pub potentiometer_pin: PotentiometerPin,
+    pub pc_uart: Uart<'d, UartWrapper, UartWrapperTxDma, UartWrapperRxDma>,
 }
 
 impl<'d> IOMappingTest<'d> {
@@ -60,7 +62,8 @@ impl<'d> IOMappingTest<'d> {
             button: ExtiInput::new(Input::new(p.PC13, gpio::Pull::None), p.EXTI13),
             button_default_level: gpio::Level::Low,
             potentiometer_adc: Adc::new(p.ADC1, &mut Delay),
-            potentiometer_pin: p.PA3
+            potentiometer_pin: p.PA3,
+            pc_uart: Uart::new(p.USART3, p.PC11, p.PC10, Irqs, p.DMA1_CH3, p.DMA1_CH1, usart::Config::default()).unwrap(),
         }
     }
 }

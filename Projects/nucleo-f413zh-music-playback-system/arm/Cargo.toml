@@ -101,7 +101,7 @@ harness = false
 required-features = ["io_mapping_test"]
 
 [[test]]
-name = "test_driver_pc_uart" 
-path = "tests/drivers/test_driver_pc_uart.rs"
+name = "test_driver_uart_wrapper" 
+path = "tests/drivers/test_driver_uart_wrapper.rs"
 harness = false
 required-features = ["io_mapping_test"]

@@ -1,7 +1,9 @@
 #[allow(unused)]
 use defmt::debug;
 use embassy_stm32::{peripherals::{DMA1_CH1, DMA1_CH3, USART3}, usart::{self, RingBufferedUartRx, Uart, UartTx}};
+use embassy_time::{Duration, Instant};
 use shared_lib::traits::UartDriver;
+
 
 #[derive(Debug)]
 pub enum UARTError {
@@ -21,13 +23,14 @@ impl From<usart::Error> for UARTError {
     }
 }
 
-pub struct PCUart<'d> {
+
+pub struct UartWrapper<'d> {
     tx: UartTx<'d, USART3, DMA1_CH3>,
     rx: RingBufferedUartRx<'d, USART3, DMA1_CH1>,
     print_as_typed: bool,
 }
 
-impl<'d> PCUart<'d> {
+impl<'d> UartWrapper<'d> {
     pub fn new<const RX_DMA_BUF_SIZE: usize>(
         uart: Uart<'d, USART3, DMA1_CH3, DMA1_CH1>, 
         rx_dma_buf: &'d mut [u8; RX_DMA_BUF_SIZE],
@@ -44,7 +47,7 @@ impl<'d> PCUart<'d> {
     }
 }
 
-impl<'d> UartDriver for PCUart<'d> {
+impl<'d> UartDriver for UartWrapper<'d> {
     type UartDriverError = UARTError;
 
     async fn write(
@@ -111,5 +114,47 @@ impl<'d> UartDriver for PCUart<'d> {
         }
 
         Ok(pos)
+    }
+}
+
+
+impl<'d> UartWrapper<'d> {
+    pub async fn test(&mut self) {
+        let mut passed = true;
+
+        crate::test!("Initiating Uart Wrapper Unit Test");
+
+        if !self.test_short_uart().await {
+            crate::test!("test_short_uart failed");
+            passed = false;
+        }
+
+        match passed {
+            true => crate::test!("Test passed"),
+            false => crate::test!("Test failed"),
+        }
+    }
+
+    async fn test_short_uart(&mut self) -> bool {
+        crate::test!("Please remember to short the UART pins");
+
+        {
+            let mut start = Instant::now();
+            let timeout = Duration::from_secs(5);
+            while Instant::now() - start < timeout {}
+        }
+
+        crate::test!("(Debug) Sending...");
+
+        let mut str = "1".as_bytes();
+        self.write(str).await;
+        for _ in 1..1_000_000 {}
+
+        crate::test!("(Debug) Trying to receive...");
+
+        let mut buf = [0u8; 1];
+        let n = self.read(&mut buf).await.unwrap();
+
+        buf[..n].eq(str)
     }
 }

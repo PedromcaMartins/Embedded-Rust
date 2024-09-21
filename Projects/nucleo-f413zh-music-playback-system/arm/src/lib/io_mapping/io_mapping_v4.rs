@@ -27,18 +27,18 @@ mod types {
     pub type PotentiometerAdc = ADC1;
     pub type PotentiometerPin = PA3;
     
-    pub type PCUart = USART3;
-    pub type PCUartRxPin = PD9;
-    pub type PCUartRxDma = DMA1_CH1;
-    pub type PCUartTxPin = PD8;
-    pub type PCUartTxDma = DMA1_CH3;
+    pub type UartWrapper = USART3;
+    pub type UartWrapperRxPin = PD9;
+    pub type UartWrapperRxDma = DMA1_CH1;
+    pub type UartWrapperTxPin = PD8;
+    pub type UartWrapperTxDma = DMA1_CH3;
 }
 
 use types::*;
 
 #[cfg(not(feature = "io_mapping_test"))]
 bind_interrupts!(struct Irqs {
-    USART3 => usart::InterruptHandler<PCUart>;
+    USART3 => usart::InterruptHandler<UartWrapper>;
 });
 #[cfg(feature = "io_mapping_test")]
 use super::Irqs;
@@ -50,7 +50,7 @@ pub struct IOMapping<'d> {
     pub button_default_level: gpio::Level,
     pub potentiometer_adc: Adc<'d, PotentiometerAdc>,
     pub potentiometer_pin: PotentiometerPin,
-    pub pc_uart: Uart<'d, PCUart, PCUartTxDma, PCUartRxDma>,
+    pub pc_uart: Uart<'d, UartWrapper, UartWrapperTxDma, UartWrapperRxDma>,
 }
 
 impl<'d> IOMapping<'d> {
