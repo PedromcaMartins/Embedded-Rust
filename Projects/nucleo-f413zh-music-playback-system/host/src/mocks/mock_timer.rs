@@ -1,10 +1,10 @@
 use std::time::Duration;
 
-use shared_lib::traits::TimerWrapper;
+use shared_lib::traits::TimerDriver;
 
 pub struct MockTimer;
 
-impl TimerWrapper for MockTimer {
+impl TimerDriver for MockTimer {
     async fn after(_duration: Duration) {
 
     }

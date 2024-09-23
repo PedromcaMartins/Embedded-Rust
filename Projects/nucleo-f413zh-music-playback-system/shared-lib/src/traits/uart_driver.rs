@@ -1,7 +1,7 @@
-use core::future::Future;
+use core::{fmt::Debug, future::Future};
 
 pub trait UartDriver {
-    type UartDriverError;
+    type UartDriverError: Debug;
 
     fn write(
         &mut self, 

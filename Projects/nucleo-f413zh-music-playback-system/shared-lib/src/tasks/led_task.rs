@@ -1,4 +1,4 @@
-use crate::traits::{LedDriver, TimerWrapper};
+use crate::traits::{LedDriver, TimerDriver};
 
 pub struct LedTask<L: LedDriver> {
     led_driver: L,
@@ -9,7 +9,7 @@ impl<L: LedDriver> LedTask<L> {
         Self { led_driver }
     }
 
-    pub async fn run<T: TimerWrapper>(mut self, _: T) -> ! {
+    pub async fn run<T: TimerDriver>(mut self, _: T) -> ! {
         loop {
             self.led_driver.toggle();
             T::after_millis(500).await;

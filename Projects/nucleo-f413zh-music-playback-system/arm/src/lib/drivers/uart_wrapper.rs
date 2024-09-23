@@ -2,6 +2,7 @@
 use defmt::debug;
 use embassy_stm32::{peripherals::{DMA1_CH1, DMA1_CH3, USART3}, usart::{self, RingBufferedUartRx, Uart, UartTx}};
 use embassy_time::{Duration, Instant};
+use embedded_io_async::Write;
 use shared_lib::traits::UartDriver;
 
 
@@ -54,13 +55,8 @@ impl<'d> UartDriver for UartWrapper<'d> {
         &mut self,
         buf: &[u8]
     ) -> Result<(), Self::UartDriverError> {
-        self.tx.blocking_flush()
-            .map_err(UARTError::from)?;
-
         self.tx.write(buf).await
-            .map_err(UARTError::from)?;
-
-        Ok(())
+            .map_err(UARTError::from)
     }
 
     async fn write_line(
@@ -68,7 +64,11 @@ impl<'d> UartDriver for UartWrapper<'d> {
         buf: &[u8]
     ) -> Result<(), Self::UartDriverError> {
         self.write(buf).await?;
-        self.write("\r\n".as_bytes()).await?;
+
+        self.tx.flush().await
+            .map_err(UARTError::from)?;
+
+        self.write(b"\r\n").await?;
 
         Ok(())
     }
@@ -100,12 +100,16 @@ impl<'d> UartDriver for UartWrapper<'d> {
                 let byte = buf[0];
                 // debug!("byte: {:X}", byte);
 
-                if self.print_as_typed {
-                    let _ = self.write(&buf).await;
+                if byte == b'\r' || byte == b'\n' {
+                    if self.print_as_typed {
+                        self.write(b"\r\n").await.unwrap();
+                    }
+
+                    break;
                 }
 
-                if byte == b'\r' || byte == b'\n' {
-                    break;
+                if self.print_as_typed {
+                    self.write(&buf).await.unwrap();
                 }
 
                 line_buf[pos] = byte;

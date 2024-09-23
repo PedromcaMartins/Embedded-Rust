@@ -1,12 +1,12 @@
 use core::future::Future;
 
 use embassy_time::Timer;
-use shared_lib::traits::TimerWrapper;
+use shared_lib::traits::TimerDriver;
 
 #[derive(Default)]
-pub struct EmbassyTimer;
+pub struct TimerWrapper;
 
-impl TimerWrapper for EmbassyTimer {
+impl TimerDriver for TimerWrapper {
     fn after(duration: core::time::Duration) -> impl Future<Output = ()> {
         Timer::after(embassy_time::Duration::try_from(duration).unwrap())
     }

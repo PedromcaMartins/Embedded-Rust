@@ -1,6 +1,6 @@
 use core::{future::Future, time::Duration};
 
-pub trait TimerWrapper
+pub trait TimerDriver
 {
     fn after(duration: Duration) -> impl Future<Output = ()>;
     fn after_ticks(ticks: u64) -> impl Future<Output = ()>;
