@@ -1,20 +1,15 @@
 #![no_std]
 #![no_main]
-#![cfg_attr(feature = "debug", allow(unused))]
 
-pub mod fmt;
+use {defmt_rtt as _, panic_probe as _};
+
 pub mod drivers;
 pub mod io_mapping;
 pub mod noop_waker;
-
-pub use fmt::*;
+pub mod models;
+pub mod tasks;
 
 use cortex_m_semihosting::debug;
-
-#[cfg(not(feature = "defmt"))]
-use panic_halt as _;
-#[cfg(feature = "defmt")]
-use {defmt_rtt as _, panic_probe as _};
 
 // same panicking *behavior* as `panic-probe` but doesn't print a panic message
 // this prevents the panic message being printed *twice* when `defmt::panic` is invoked

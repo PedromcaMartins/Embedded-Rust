@@ -1,7 +1,9 @@
 use core::str::{self, FromStr};
+use defmt::Format;
 
-use crate::traits::UartDriver;
+use crate::drivers::UartWrapper;
 
+#[derive(Format)]
 pub enum CliCommands {
     Help,
 }
@@ -17,12 +19,12 @@ impl FromStr for CliCommands {
     }
 }
 
-pub struct Cli<U: UartDriver> {
-    uart: U,
+pub struct Cli<'d> {
+    uart: UartWrapper<'d>,
 }
 
-impl<U: UartDriver> Cli<U> {
-    pub fn new(uart: U) -> Self {
+impl<'d> Cli<'d> {
+    pub fn new(uart: UartWrapper<'d>) -> Self {
         Self { uart }
     }
 

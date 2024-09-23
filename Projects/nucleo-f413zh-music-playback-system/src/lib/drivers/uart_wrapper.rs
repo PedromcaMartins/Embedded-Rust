@@ -3,7 +3,6 @@ use defmt::debug;
 use embassy_stm32::{peripherals::{DMA1_CH1, DMA1_CH3, USART3}, usart::{self, RingBufferedUartRx, Uart, UartTx}};
 use embassy_time::{Duration, Instant};
 use embedded_io_async::Write;
-use shared_lib::traits::UartDriver;
 
 
 #[derive(Debug)]
@@ -28,14 +27,12 @@ impl From<usart::Error> for UARTError {
 pub struct UartWrapper<'d> {
     tx: UartTx<'d, USART3, DMA1_CH3>,
     rx: RingBufferedUartRx<'d, USART3, DMA1_CH1>,
-    print_as_typed: bool,
 }
 
 impl<'d> UartWrapper<'d> {
     pub fn new<const RX_DMA_BUF_SIZE: usize>(
         uart: Uart<'d, USART3, DMA1_CH3, DMA1_CH1>, 
         rx_dma_buf: &'d mut [u8; RX_DMA_BUF_SIZE],
-        print_as_typed: bool
     ) -> Self {
         let (tx, rx) = uart.split();
         let rx = rx.into_ring_buffered(rx_dma_buf);
@@ -43,26 +40,21 @@ impl<'d> UartWrapper<'d> {
         Self { 
             tx, 
             rx, 
-            print_as_typed,
         }
     }
-}
 
-impl<'d> UartDriver for UartWrapper<'d> {
-    type UartDriverError = UARTError;
-
-    async fn write(
+    pub async fn write(
         &mut self,
         buf: &[u8]
-    ) -> Result<(), Self::UartDriverError> {
+    ) -> Result<(), UARTError> {
         self.tx.write(buf).await
             .map_err(UARTError::from)
     }
 
-    async fn write_line(
+    pub async fn write_line(
         &mut self,
         buf: &[u8]
-    ) -> Result<(), Self::UartDriverError> {
+    ) -> Result<(), UARTError> {
         self.write(buf).await?;
 
         self.tx.flush().await
@@ -73,18 +65,18 @@ impl<'d> UartDriver for UartWrapper<'d> {
         Ok(())
     }
 
-    async fn read<const BUF_SIZE: usize>(
+    pub async fn read<const BUF_SIZE: usize>(
         &mut self,
         buf: &mut [u8; BUF_SIZE]
-    ) -> Result<usize, Self::UartDriverError> {
+    ) -> Result<usize, UARTError> {
         self.rx.read(buf).await
             .map_err(UARTError::from)
     }
 
-    async fn read_line<const BUF_SIZE: usize>(
+    pub async fn read_line<const BUF_SIZE: usize>(
         &mut self,
         line_buf: &mut [u8; BUF_SIZE]
-    ) -> Result<usize, Self::UartDriverError> {
+    ) -> Result<usize, UARTError> {
         let mut pos = 0;
 
         let mut buf = [0u8; 1];
@@ -101,16 +93,11 @@ impl<'d> UartDriver for UartWrapper<'d> {
                 // debug!("byte: {:X}", byte);
 
                 if byte == b'\r' || byte == b'\n' {
-                    if self.print_as_typed {
-                        self.write(b"\r\n").await.unwrap();
-                    }
-
+                    self.write(b"\r\n").await.unwrap();
                     break;
                 }
 
-                if self.print_as_typed {
-                    self.write(&buf).await.unwrap();
-                }
+                self.write(&buf).await.unwrap();
 
                 line_buf[pos] = byte;
                 pos += 1;
@@ -126,35 +113,35 @@ impl<'d> UartWrapper<'d> {
     pub async fn test(&mut self) {
         let mut passed = true;
 
-        crate::test!("Initiating Uart Wrapper Unit Test");
+        debug!("Initiating Uart Wrapper Unit Test");
 
         if !self.test_short_uart().await {
-            crate::test!("test_short_uart failed");
+            debug!("test_short_uart failed");
             passed = false;
         }
 
         match passed {
-            true => crate::test!("Test passed"),
-            false => crate::test!("Test failed"),
+            true => debug!("Test passed"),
+            false => debug!("Test failed"),
         }
     }
 
     async fn test_short_uart(&mut self) -> bool {
-        crate::test!("Please remember to short the UART pins");
+        debug!("Please remember to short the UART pins");
 
         {
-            let mut start = Instant::now();
+            let start = Instant::now();
             let timeout = Duration::from_secs(5);
             while Instant::now() - start < timeout {}
         }
 
-        crate::test!("(Debug) Sending...");
+        debug!("(Debug) Sending...");
 
-        let mut str = "1".as_bytes();
-        self.write(str).await;
+        let str = "1".as_bytes();
+        self.write(str).await.unwrap();
         for _ in 1..1_000_000 {}
 
-        crate::test!("(Debug) Trying to receive...");
+        debug!("(Debug) Trying to receive...");
 
         let mut buf = [0u8; 1];
         let n = self.read(&mut buf).await.unwrap();
