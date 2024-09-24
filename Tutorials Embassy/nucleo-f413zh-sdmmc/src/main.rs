@@ -11,11 +11,17 @@ use {defmt_rtt as _, panic_probe as _};
 
 use embassy_executor::Spawner;
 use embassy_stm32::{bind_interrupts, gpio::{Input, Level, Pull}, peripherals, sdmmc::{self, DataBlock, Sdmmc}, time::{mhz, Hertz}, Config};
+use embassy_time::Instant;  // Add for timing
 use fmt::info;
 
 /// This is a safeguard to not overwrite any data on the SD card.
 /// If you don't care about SD card contents, set this to `true` to test writes.
-const ALLOW_WRITES: bool = false;
+const ALLOW_WRITES: bool = true;
+
+// Number of blocks to read/write for the benchmark
+const BLOCK_COUNT: usize = 5;
+
+const ARRAY_REPEAT_VALUE: embassy_stm32::sdmmc::DataBlock = DataBlock([0u8; 512]);
 
 bind_interrupts!(struct Irqs {
     SDIO => sdmmc::InterruptHandler<peripherals::SDIO>;
@@ -52,13 +58,16 @@ async fn main(_spawner: Spawner) {
         Level::High => info!("SD Card is inserted"),
     }
 
-    let mut sdmmc = Sdmmc::new_1bit(
+    let mut sdmmc = Sdmmc::new_4bit(
         p.SDIO,
         Irqs,
         p.DMA2_CH3,
         p.PC12, // clk
         p.PD2,  // cmd
         p.PC8,  // d0
+        p.PC9,  // d1
+        p.PC10, // d2
+        p.PC11, // d3
         Default::default(),
     );
 
@@ -82,33 +91,80 @@ async fn main(_spawner: Spawner) {
     info!("Card: {:#?}", Debug2Format(card));
     info!("Clock: {}", sdmmc.clock());
 
-    // Arbitrary block index
+    // Arbitrary block index to start the read/write sequence
     let block_idx = 16;
 
-    // SDMMC uses `DataBlock` instead of `&[u8]` to ensure 4 byte alignment required by the hardware.
-    let mut block = DataBlock([0u8; 512]);
+    // Prepare a sequence of data blocks
+    let mut blocks = [ARRAY_REPEAT_VALUE; BLOCK_COUNT];
 
-    sdmmc.read_block(block_idx, &mut block).await.unwrap();
-    info!("Read: {=[u8]:X}...{=[u8]:X}", block[..8], block[512 - 8..]);
+    // Benchmark for reading a sequence of blocks
+    let start_time = Instant::now();  // Start timer
+    for i in 0..BLOCK_COUNT {
+        sdmmc.read_block(block_idx + i as u32, &mut blocks[i]).await.unwrap();
+    }
+    let elapsed_time = Instant::now() - start_time;  // Stop timer
+
+    let elapsed_us = elapsed_time.as_micros(); // Time in microseconds
+    let data_size = 512 * BLOCK_COUNT;  // Total data size in bytes (512 bytes per block)
+    let bandwidth = (data_size as u64 * 1_000_000) / elapsed_us;  // Bytes per second
+
+    info!("Read Latency: {} µs", elapsed_us);
+    info!("Read Bandwidth: {} bytes/sec", bandwidth);
+    info!("Read: {=[u8]:X}...{=[u8]:X}", blocks[0][..8], blocks[BLOCK_COUNT - 1][512 - 8..]);
 
     if !ALLOW_WRITES {
         info!("Writing is disabled.");
         panic!();
     }
 
-    info!("Filling block with 0x55");
-    block.fill(0x55);
-    sdmmc.write_block(block_idx, &block).await.unwrap();
+    // Fill the blocks with data for writing
+    for block in blocks.iter_mut() {
+        block.fill(0x55);  // Fill each block with 0x55
+    }
+
+    // Benchmark for writing a sequence of blocks
+    let start_time = Instant::now();  // Start timer
+    for i in 0..BLOCK_COUNT {
+        sdmmc.write_block(block_idx + i as u32, &blocks[i]).await.unwrap();
+    }
+    let elapsed_time = Instant::now() - start_time;  // Stop timer
+
+    let elapsed_us = elapsed_time.as_micros(); // Time in microseconds
+    let bandwidth = (data_size as u64 * 1_000_000) / elapsed_us;  // Bytes per second
+
+    info!("Write Latency: {} µs", elapsed_us);
+    info!("Write Bandwidth: {} bytes/sec", bandwidth);
     info!("Write done");
 
-    sdmmc.read_block(block_idx, &mut block).await.unwrap();
-    info!("Read: {=[u8]:X}...{=[u8]:X}", block[..8], block[512 - 8..]);
+    // Reading again to confirm the write operation
+    for i in 0..BLOCK_COUNT {
+        sdmmc.read_block(block_idx + i as u32, &mut blocks[i]).await.unwrap();
+    }
+    info!("Read: {=[u8]:X}...{=[u8]:X}", blocks[0][..8], blocks[BLOCK_COUNT - 1][512 - 8..]);
 
-    info!("Filling block with 0xAA");
-    block.fill(0xAA);
-    sdmmc.write_block(block_idx, &block).await.unwrap();
+    // Fill the blocks with different data for the next write
+    for block in blocks.iter_mut() {
+        block.fill(0xAA);  // Fill each block with 0xAA
+    }
+
+    // Benchmark for another write operation
+    let start_time = Instant::now();  // Start timer
+    for i in 0..BLOCK_COUNT {
+        sdmmc.write_block(block_idx + i as u32, &blocks[i]).await.unwrap();
+    }
+    let elapsed_time = Instant::now() - start_time;  // Stop timer
+
+    let elapsed_us = elapsed_time.as_micros(); // Time in microseconds
+    let bandwidth = (data_size as u64 * 1_000_000) / elapsed_us;  // Bytes per second
+
+    info!("Write Latency: {} µs", elapsed_us);
+    info!("Write Bandwidth: {} bytes/sec", bandwidth);
     info!("Write done");
 
-    sdmmc.read_block(block_idx, &mut block).await.unwrap();
-    info!("Read: {=[u8]:X}...{=[u8]:X}", block[..8], block[512 - 8..]);
+    // Final read to verify the last write operation
+    for i in 0..BLOCK_COUNT {
+        sdmmc.read_block(block_idx + i as u32, &mut blocks[i]).await.unwrap();
+    }
+    info!("Read: {=[u8]:X}...{=[u8]:X}", blocks[0][..8], blocks[BLOCK_COUNT - 1][512 - 8..]);
 }
+
