@@ -1,24 +1,25 @@
 #[allow(unused)]
 use defmt::debug;
+use defmt::{trace, unwrap, warn, Format};
 use embassy_stm32::{peripherals::{DMA1_CH1, DMA1_CH3, USART3}, usart::{self, RingBufferedUartRx, Uart, UartTx}};
 use embassy_time::{Duration, Instant};
 use embedded_io_async::Write;
 
 
-#[derive(Debug)]
-pub enum UARTError {
+#[derive(Debug, Format)]
+pub enum UartError {
     ArgBufferOverflow,
     ArgBufferTooLongForDma,
     DmaReadOverrun,
     ProtocolErrorDebugASAP
 }
 
-impl From<usart::Error> for UARTError {
+impl From<usart::Error> for UartError {
     fn from(value: usart::Error) -> Self {
         match value {
-            usart::Error::BufferTooLong => UARTError::ArgBufferTooLongForDma,
-            usart::Error::Overrun => UARTError::DmaReadOverrun,
-            _ => UARTError::ProtocolErrorDebugASAP,
+            usart::Error::BufferTooLong => UartError::ArgBufferTooLongForDma,
+            usart::Error::Overrun => UartError::DmaReadOverrun,
+            _ => UartError::ProtocolErrorDebugASAP,
         }
     }
 }
@@ -46,19 +47,19 @@ impl<'d> UartWrapper<'d> {
     pub async fn write(
         &mut self,
         buf: &[u8]
-    ) -> Result<(), UARTError> {
+    ) -> Result<(), UartError> {
         self.tx.write(buf).await
-            .map_err(UARTError::from)
+            .map_err(UartError::from)
     }
 
     pub async fn write_line(
         &mut self,
         buf: &[u8]
-    ) -> Result<(), UARTError> {
+    ) -> Result<(), UartError> {
         self.write(buf).await?;
 
         self.tx.flush().await
-            .map_err(UARTError::from)?;
+            .map_err(UartError::from)?;
 
         self.write(b"\r\n").await?;
 
@@ -68,15 +69,15 @@ impl<'d> UartWrapper<'d> {
     pub async fn read<const BUF_SIZE: usize>(
         &mut self,
         buf: &mut [u8; BUF_SIZE]
-    ) -> Result<usize, UARTError> {
+    ) -> Result<usize, UartError> {
         self.rx.read(buf).await
-            .map_err(UARTError::from)
+            .map_err(UartError::from)
     }
 
     pub async fn read_line<const BUF_SIZE: usize>(
         &mut self,
         line_buf: &mut [u8; BUF_SIZE]
-    ) -> Result<usize, UARTError> {
+    ) -> Result<usize, UartError> {
         let mut pos = 0;
 
         let mut buf = [0u8; 1];
@@ -86,18 +87,18 @@ impl<'d> UartWrapper<'d> {
 
             if n > 0 {
                 if pos >= BUF_SIZE {
-                    return Err(UARTError::ArgBufferOverflow);
+                    return Err(UartError::ArgBufferOverflow);
                 }
 
                 let byte = buf[0];
                 // debug!("byte: {:X}", byte);
 
                 if byte == b'\r' || byte == b'\n' {
-                    self.write(b"\r\n").await.unwrap();
+                    self.write(b"\r\n").await?;
                     break;
                 }
 
-                self.write(&buf).await.unwrap();
+                self.write(&buf).await?;
 
                 line_buf[pos] = byte;
                 pos += 1;
@@ -116,13 +117,13 @@ impl<'d> UartWrapper<'d> {
         debug!("Initiating Uart Wrapper Unit Test");
 
         if !self.test_short_uart().await {
-            debug!("test_short_uart failed");
+            warn!("test_short_uart failed");
             passed = false;
         }
 
         match passed {
             true => debug!("Test passed"),
-            false => debug!("Test failed"),
+            false => warn!("Test failed"),
         }
     }
 
@@ -135,17 +136,25 @@ impl<'d> UartWrapper<'d> {
             while Instant::now() - start < timeout {}
         }
 
-        debug!("(Debug) Sending...");
+        trace!("Sending...");
 
-        let str = "1".as_bytes();
-        self.write(str).await.unwrap();
+        let str = "hello world!".as_bytes();
+        unwrap!(self.write(str).await);
         for _ in 1..1_000_000 {}
 
-        debug!("(Debug) Trying to receive...");
+        trace!("Trying to receive...");
 
         let mut buf = [0u8; 1];
-        let n = self.read(&mut buf).await.unwrap();
+        let n = unwrap!(self.read(&mut buf).await);
 
-        buf[..n].eq(str)
+        trace!("Received...");
+
+        let res = buf[..n].eq(str);
+        match res { 
+            true => debug!("message sent equals received"), 
+            false => debug!("message sent differs received"), 
+        }
+
+        res
     }
 }

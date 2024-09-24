@@ -1,6 +1,8 @@
 use core::marker::PhantomData;
 
 use defmt::debug;
+use defmt::error;
+use defmt::warn;
 use embassy_stm32::gpio::Pin;
 use embassy_time::Duration;
 use embassy_time::Instant;
@@ -60,13 +62,13 @@ where
         debug!("Initiating Button Polling Unit Test");
 
         if !self.test_polling_pressed_down() {
-            debug!("test_polling_pressed_down failed");
+            warn!("test_polling_pressed_down failed");
             passed = false;
         }
 
         match passed {
             true => debug!("Test passed"),
-            false => debug!("Test failed"),
+            false => warn!("Test failed"),
         }
     }
 
@@ -84,7 +86,7 @@ where
         let timeout = Duration::from_millis(150);
         while Instant::now() - start < timeout {
             if self.is_pressed_down() {
-                debug!("Error: unexpected button pressed after instructed release");
+                error!("Unexpected button pressed after instructed release");
                 return false
             }
         }
@@ -105,13 +107,13 @@ where
         debug!("Initiating Button Interrupt Unit Test");
 
         if !self.test_interrupt_pressed_down().await {
-            debug!("test_interrupt_pressed_down failed");
+            warn!("test_interrupt_pressed_down failed");
             passed = false;
         }
 
         match passed {
             true => debug!("Test passed"),
-            false => debug!("Test failed"),
+            false => warn!("Test failed"),
         }
     }
 
@@ -129,7 +131,7 @@ where
         let timeout = Duration::from_millis(150);
         while Instant::now() - start < timeout {
             if self.is_pressed_down() {
-                debug!("Error: unexpected button pressed after instructed release");
+                error!("Error: unexpected button pressed after instructed release");
                 return false
             }
         }

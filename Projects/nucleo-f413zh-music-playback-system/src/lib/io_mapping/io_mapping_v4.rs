@@ -1,3 +1,5 @@
+use defmt::trace;
+use defmt::unwrap;
 use embassy_stm32::adc::Adc;
 use embassy_stm32::bind_interrupts;
 use embassy_stm32::exti::ExtiInput;
@@ -55,6 +57,8 @@ pub struct IOMapping<'d> {
 
 impl<'d> IOMapping<'d> {
     pub fn init(p: embassy_stm32::Peripherals) -> Self {
+        trace!("IO Mapping v4 initialized!");
+
         Self {
             led: Output::new(p.PB7, gpio::Level::Low, gpio::Speed::Low),
             led_default_level: gpio::Level::Low,
@@ -62,7 +66,7 @@ impl<'d> IOMapping<'d> {
             button_default_level: gpio::Level::Low,
             potentiometer_adc: Adc::new(p.ADC1, &mut Delay),
             potentiometer_pin: p.PA3,
-            pc_uart: Uart::new(p.USART3, p.PD9, p.PD8, Irqs, p.DMA1_CH3, p.DMA1_CH1, usart::Config::default()).unwrap(),
+            pc_uart: unwrap!(Uart::new(p.USART3, p.PD9, p.PD8, Irqs, p.DMA1_CH3, p.DMA1_CH1, usart::Config::default())),
         }
     }
 }

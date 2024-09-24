@@ -1,13 +1,13 @@
 use core::str::{self, FromStr};
-use defmt::Format;
+use defmt::{error, Format};
 
-use crate::drivers::UartWrapper;
+use crate::drivers::{UartError, UartWrapper};
 
 #[derive(Format)]
 pub enum CliCommands {
     Help,
 }
-
+           
 impl FromStr for CliCommands {
     type Err = ();
 
@@ -28,25 +28,33 @@ impl<'d> Cli<'d> {
         Self { uart }
     }
 
-    pub async fn process(&mut self) -> CliCommands {
+    pub async fn process(&mut self) -> Result<CliCommands, UartError> {
         let mut line = [0u8; 128];
 
         loop {
-            self.uart.write("> ".as_bytes()).await.unwrap();
+            self.uart.write("> ".as_bytes()).await?;
 
-            let n = self.uart.read_line(&mut line).await.unwrap();
+            let n = self.uart.read_line(&mut line).await?;
 
             if let Ok(command) = str::from_utf8(&line[..n]) {
-                if let Ok(command) = command.trim().parse::<CliCommands>() {
-                    return command;
+                if command.trim().is_empty() {
+                    continue;
                 }
-            }
 
-            self.write_line("Incorrect Command!").await;
+                if let Ok(command) = command.trim().parse::<CliCommands>() {
+                    return Ok(command);
+                } else {
+                    self.write_line("Invalid command!").await?;
+                    error!("Command does not exist");
+                }
+            } else {
+                self.write_line("Invalid characters").await?;
+                error!("Invalid characters");
+            }
         }
     }
 
-    async fn write_line(&mut self, line: &str) {
-        self.uart.write_line(line.as_bytes()).await.unwrap()
+    async fn write_line(&mut self, line: &str) -> Result<(), UartError> {
+        self.uart.write_line(line.as_bytes()).await
     }
 }

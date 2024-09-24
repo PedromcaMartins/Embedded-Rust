@@ -1,4 +1,4 @@
-use defmt::debug;
+use defmt::{debug, trace};
 use embassy_stm32::adc::{self, AdcPin};
 use embassy_time::{Duration, Instant};
 
@@ -106,8 +106,8 @@ where
         let timeout = Duration::from_secs(3);
         while self.read_position() != position {
             if Instant::now() - start > timeout {
-                debug!(
-                    "(Debug) raw adc value: {}, adc value: {}", 
+                trace!(
+                    "raw adc value: {}, adc value: {}", 
                     self.read_raw_value(),
                     self.read_position()
                 );

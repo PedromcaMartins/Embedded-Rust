@@ -17,7 +17,7 @@ mod test_driver_uart_wrapper {
         let io_mapping = IOMappingTest::init(p);
 
         let mut rx_dma_buf = [0u8; 32];
-        let mut uart = UartWrapper::new(io_mapping.pc_uart, &mut rx_dma_buf, true);
+        let mut uart = UartWrapper::new(io_mapping.pc_uart, &mut rx_dma_buf);
 
         let mut future = uart.test();
         poll_future(&mut future);

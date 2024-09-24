@@ -12,6 +12,7 @@ use embassy_stm32::peripherals::PC13;
 use embassy_stm32::usart;
 use embassy_stm32::usart::Uart;
 use embassy_time::Delay;
+use defmt::trace;
 
 mod types {
     use embassy_stm32::peripherals::ADC1;
@@ -56,6 +57,8 @@ pub struct IOMappingTest<'d> {
 
 impl<'d> IOMappingTest<'d> {
     pub fn init(p: embassy_stm32::Peripherals) -> Self {
+        trace!("IO Mapping test initialized!");
+
         Self {
             led: Output::new(p.PB7, gpio::Level::Low, gpio::Speed::Low),
             led_default_level: gpio::Level::Low,
@@ -63,7 +66,7 @@ impl<'d> IOMappingTest<'d> {
             button_default_level: gpio::Level::Low,
             potentiometer_adc: Adc::new(p.ADC1, &mut Delay),
             potentiometer_pin: p.PA3,
-            pc_uart: Uart::new(p.USART3, p.PC11, p.PC10, Irqs, p.DMA1_CH3, p.DMA1_CH1, usart::Config::default()).unwrap(),
+            pc_uart: unwrap!(Uart::new(p.USART3, p.PC11, p.PC10, Irqs, p.DMA1_CH3, p.DMA1_CH1, usart::Config::default())),
         }
     }
 }
