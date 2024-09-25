@@ -1,6 +1,7 @@
 use core::marker::PhantomData;
 
 use embassy_stm32::gpio::{Input, Level, Pin};
+use embassy_time::Duration;
 
 use super::{Button, ButtonMode};
 
@@ -16,9 +17,10 @@ impl<'d, T: Pin> ButtonMode for PollingInput<'d, T> {
 }
 
 impl<'d, T: Pin> Button<'d, T, PollingInput<'d, T>> {
-    pub fn new_polling(input: Input<'d, T>, default_level: Level) -> Self {
+    pub fn new_polling(input: Input<'d, T>, default_level: Level, debounce_duration: Duration) -> Self {
         Self {
             input: PollingInput { input, default_level }, 
+            debounce_duration,
             _pin: PhantomData
         }
     }

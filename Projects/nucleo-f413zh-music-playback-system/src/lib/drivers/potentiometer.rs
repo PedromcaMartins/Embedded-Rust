@@ -1,6 +1,6 @@
 use defmt::{debug, trace};
 use embassy_stm32::adc::{self, AdcPin};
-use embassy_time::{Duration, Instant};
+use embassy_time::{Duration, Instant, Timer};
 
 use super::{AdcManager, ADC_RESOLUTION};
 
@@ -12,6 +12,7 @@ where
 {
     adc_manager: &'a mut AdcManager<'b, T>,
     pin: P,
+    debounce_duration: Duration,
 }
 
 impl<'a, 'b, T, P> Potentiometer<'a, 'b, T, P> 
@@ -19,22 +20,35 @@ where
     T: adc::Instance,
     P: AdcPin<T>
 {
-    pub fn new(adc_manager: &'a mut AdcManager<'b, T>, pin: P) -> Self {
+    pub fn new(adc_manager: &'a mut AdcManager<'b, T>, pin: P, debounce_duration: Duration) -> Self {
         Self {
             adc_manager,
-            pin
+            pin,
+            debounce_duration,
         }
     }
 
     /// Read the potentiometer position as percentage
-    fn read_raw_value(&mut self) -> u16 {
+    pub fn read_raw_value(&mut self) -> u16 {
         self.adc_manager.read_pin(&mut self.pin)
     }
 
     /// Read the potentiometer position as percentage
-    fn read_position(&mut self) -> u8 {
+    pub fn read_position(&mut self) -> u8 {
         let raw_value = self.read_raw_value();
         Self::calculate_percentage(raw_value as u32, ADC_RESOLUTION.to_max_count())
+    }
+
+    pub async fn wait_for_change_in_position(&mut self) -> u8 {
+        let start_pos = self.read_position();
+        let mut new_pos = start_pos;
+
+        while start_pos.abs_diff(new_pos) < 5 {
+            Timer::after(self.debounce_duration).await;
+            new_pos = self.read_position();
+        }
+
+        new_pos / 5 * 5
     }
 
     /// Calculate percentage from raw value and max ADC count

@@ -1,9 +1,6 @@
 #![no_std]
 #![no_main]
 
-#[cfg(not(feature = "defmt"))]
-use panic_halt as _;
-#[cfg(feature = "defmt")]
 use {defmt_rtt as _, panic_probe as _};
 
 // See https://crates.io/crates/defmt-test/0.3.0 for more documentation (e.g. about the 'state' feature)
@@ -17,7 +14,7 @@ mod test_driver_potentiometer {
         let io_mapping = IOMappingTest::init(p);
 
         let mut adc_manager = AdcManager::new(io_mapping.potentiometer_adc);
-        let mut potentiometer = Potentiometer::new(&mut adc_manager, io_mapping.potentiometer_pin);
+        let mut potentiometer = Potentiometer::new(&mut adc_manager, io_mapping.potentiometer_pin, io_mapping.debounce_duration);
 
         potentiometer.test();
     }

@@ -1,19 +1,21 @@
 use core::str::{self, FromStr};
-use defmt::{error, Format};
+use defmt::{debug, error, Format};
 
 use crate::drivers::{UartError, UartWrapper};
 
 #[derive(Format)]
 pub enum CliCommands {
     Help,
+    UserInputTest,
 }
-           
+
 impl FromStr for CliCommands {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "help" => Ok(CliCommands::Help),
+            "test user input" => Ok(CliCommands::UserInputTest),
             _ => Err(())
         }
     }
@@ -26,6 +28,10 @@ pub struct Cli<'d> {
 impl<'d> Cli<'d> {
     pub fn new(uart: UartWrapper<'d>) -> Self {
         Self { uart }
+    }
+
+    async fn write_line(&mut self, line: &str) -> Result<(), UartError> {
+        self.uart.write_line(line.as_bytes()).await
     }
 
     pub async fn process(&mut self) -> Result<CliCommands, UartError> {
@@ -42,6 +48,7 @@ impl<'d> Cli<'d> {
                 }
 
                 if let Ok(command) = command.trim().parse::<CliCommands>() {
+                    debug!("Cli command: {}", command);
                     return Ok(command);
                 } else {
                     self.write_line("Invalid command!").await?;
@@ -54,7 +61,13 @@ impl<'d> Cli<'d> {
         }
     }
 
-    async fn write_line(&mut self, line: &str) -> Result<(), UartError> {
-        self.uart.write_line(line.as_bytes()).await
+    pub async fn display_help_message(&mut self) -> Result<(), UartError> {
+        let help_message = 
+"Usage: <cmd>\r
+Commands:\r
+\thelp              Show help\r
+\ttest user input   Test input\r";
+
+        self.write_line(help_message).await
     }
 }

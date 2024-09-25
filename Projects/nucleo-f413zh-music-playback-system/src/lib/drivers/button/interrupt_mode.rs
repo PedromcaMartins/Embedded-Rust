@@ -1,6 +1,7 @@
 use core::marker::PhantomData;
 
 use embassy_stm32::{exti::ExtiInput, gpio::{Level, Pin}};
+use embassy_time::Duration;
 
 use super::{Button, ButtonMode, InterruptMode};
 
@@ -32,9 +33,10 @@ impl<'d, T: Pin> InterruptMode for InterruptInput<'d, T> {
 }
 
 impl<'d, T: Pin> Button<'d, T, InterruptInput<'d, T>> {
-    pub fn new_interrupt(input: ExtiInput<'d, T>, default_level: Level) -> Self {
+    pub fn new_interrupt(input: ExtiInput<'d, T>, default_level: Level, debounce_duration: Duration) -> Self {
         Self {
             input: InterruptInput { input, default_level }, 
+            debounce_duration,
             _pin: PhantomData
         }
     }

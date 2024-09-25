@@ -1,7 +1,7 @@
-use defmt::{debug, error, info};
+use defmt::{debug, error};
 use embassy_stm32::usart::Uart;
 
-use crate::{drivers::UartWrapper, io_mapping::types::{PCUart, PCUartRxDma, PCUartTxDma}, models::Cli};
+use crate::{drivers::UartWrapper, io_mapping::types::{PCUart, PCUartRxDma, PCUartTxDma}, models::{Cli, CliCommands}};
 
 const DMA_BUF_SIZE: usize = 32;
 
@@ -26,7 +26,12 @@ pub async fn cli_task_spawn(
                 continue;
             }
         };
-
-        info!("{}", command);
+        match command {
+            CliCommands::Help => if let Err(e) = cli.display_help_message().await {
+                error!("Displaying help message {}", e);
+                continue;
+            },
+            CliCommands::UserInputTest => (),
+        }
     }
 }

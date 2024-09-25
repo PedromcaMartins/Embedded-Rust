@@ -138,7 +138,7 @@ impl<'d> UartWrapper<'d> {
 
         trace!("Sending...");
 
-        let str = "hello world!".as_bytes();
+        let str = "1".as_bytes();
         unwrap!(self.write(str).await);
         for _ in 1..1_000_000 {}
 

@@ -12,7 +12,9 @@ use embassy_stm32::peripherals::PC13;
 use embassy_stm32::usart;
 use embassy_stm32::usart::Uart;
 use embassy_time::Delay;
+use embassy_time::Duration;
 use defmt::trace;
+use defmt::unwrap;
 
 mod types {
     use embassy_stm32::peripherals::ADC1;
@@ -45,6 +47,8 @@ bind_interrupts!(pub struct Irqs {
     USART3 => usart::InterruptHandler<UartWrapper>;
 });
 
+const DEBOUNCE_DURATION: Duration = Duration::from_millis(150);
+
 pub struct IOMappingTest<'d> {
     pub led: Output<'d, LedPin>, 
     pub led_default_level: gpio::Level, 
@@ -53,6 +57,7 @@ pub struct IOMappingTest<'d> {
     pub potentiometer_adc: Adc<'d, PotentiometerAdc>,
     pub potentiometer_pin: PotentiometerPin,
     pub pc_uart: Uart<'d, UartWrapper, UartWrapperTxDma, UartWrapperRxDma>,
+    pub debounce_duration: Duration,
 }
 
 impl<'d> IOMappingTest<'d> {
@@ -67,6 +72,7 @@ impl<'d> IOMappingTest<'d> {
             potentiometer_adc: Adc::new(p.ADC1, &mut Delay),
             potentiometer_pin: p.PA3,
             pc_uart: unwrap!(Uart::new(p.USART3, p.PC11, p.PC10, Irqs, p.DMA1_CH3, p.DMA1_CH1, usart::Config::default())),
+            debounce_duration: DEBOUNCE_DURATION,
         }
     }
 }

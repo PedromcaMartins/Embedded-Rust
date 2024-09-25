@@ -1,9 +1,6 @@
 #![no_std]
 #![no_main]
 
-#[cfg(not(feature = "defmt"))]
-use panic_halt as _;
-#[cfg(feature = "defmt")]
 use {defmt_rtt as _, panic_probe as _};
 
 // See https://crates.io/crates/defmt-test/0.3.0 for more documentation (e.g. about the 'state' feature)

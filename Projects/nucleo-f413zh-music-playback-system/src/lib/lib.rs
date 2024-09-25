@@ -5,7 +5,6 @@ use {defmt_rtt as _, panic_probe as _};
 
 pub mod drivers;
 pub mod io_mapping;
-pub mod noop_waker;
 pub mod models;
 pub mod tasks;
 

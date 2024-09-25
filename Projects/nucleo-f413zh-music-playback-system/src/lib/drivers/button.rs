@@ -12,13 +12,17 @@ pub use button_mode::ButtonMode;
 pub use button_mode::InterruptMode;
 
 mod polling_mode;
+use embassy_time::Timer;
+pub use polling_mode::PollingInput;
 mod interrupt_mode;
+pub use interrupt_mode::InterruptInput;
 
 pub struct Button<'d, T, Mode>
 where
     T: Pin
 {
     input: Mode,
+    debounce_duration: Duration,
     _pin: PhantomData<&'d T>, // keeps the lifetime around
 }
 
@@ -42,11 +46,24 @@ where
     M: InterruptMode
 {
     pub async fn wait_for_press_down(&mut self) {
-        self.input.wait_for_press_down().await
+        loop {
+            self.input.wait_for_press_down().await;
+            Timer::after(self.debounce_duration).await;
+            if self.is_pressed_down() {
+                self.wait_for_release().await;
+                return
+            }
+        }
     }
 
     pub async fn wait_for_release(&mut self) {
-        self.input.wait_for_release().await
+        loop {
+            self.input.wait_for_release().await;
+            Timer::after(self.debounce_duration).await;
+            if self.is_released() {
+                return
+            }
+        }
     }
 }
 
