@@ -4,7 +4,7 @@
 
 use {defmt_rtt as _, panic_probe as _};
 
-use arm::{io_mapping::IOMapping, tasks::{cli_task_spawn, user_input_task_spawn}};
+use arm::{io_mapping::IOMapping, tasks::{cli_task::cli_task_spawn, user_input_task::user_input_task_spawn}};
 
 use embassy_executor::Spawner;
 
@@ -25,5 +25,7 @@ async fn main(spawner: Spawner) {
         io_mapping.volume_dial_pin
     )));
 
-    unwrap!(spawner.spawn(cli_task_spawn(io_mapping.pc_uart)));
+    unwrap!(spawner.spawn(cli_task_spawn(
+        io_mapping.pc_uart
+    )));
 }

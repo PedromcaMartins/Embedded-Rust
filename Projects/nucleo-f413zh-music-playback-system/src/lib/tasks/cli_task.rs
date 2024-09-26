@@ -1,9 +1,23 @@
-use defmt::{debug, error};
+use defmt::{debug, error, unwrap};
 use embassy_stm32::usart::Uart;
+use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, pubsub::PubSubChannel};
 
-use crate::{drivers::UartWrapper, io_mapping::types::{PCUart, PCUartRxDma, PCUartTxDma}, models::{Cli, CliCommands}};
+use crate::{drivers::UartWrapper, io_mapping::types::{PCUart, PCUartRxDma, PCUartTxDma}, models::{Cli, CliCommand}};
 
 const DMA_BUF_SIZE: usize = 32;
+const CHANNEL_CAP: usize = 3;
+const CHANNEL_SUBS: usize = 2;
+const CHANNEL_PUBS: usize = 1;
+
+/// Channel used by the cli task to broadcast the cli commands to the other tasks
+pub static CHANNEL_CLI_COMMAND: PubSubChannel<
+    CriticalSectionRawMutex, 
+    CliCommand, 
+    CHANNEL_CAP, 
+    CHANNEL_SUBS, 
+    CHANNEL_PUBS
+> = PubSubChannel::new();
+
 
 #[embassy_executor::task]
 pub async fn cli_task_spawn(
@@ -18,6 +32,8 @@ pub async fn cli_task_spawn(
     );
     let mut cli = Cli::new(pc_uart);
 
+    let cli_publisher = unwrap!(CHANNEL_CLI_COMMAND.publisher());
+
     loop {
         let command = match cli.process().await {
             Ok(command) => command,
@@ -27,11 +43,11 @@ pub async fn cli_task_spawn(
             }
         };
         match command {
-            CliCommands::Help => if let Err(e) = cli.display_help_message().await {
+            CliCommand::Help => if let Err(e) = cli.display_help_message().await {
                 error!("Displaying help message {}", e);
                 continue;
             },
-            CliCommands::UserInputTest => (),
+            _ => cli_publisher.publish(command).await,
         }
     }
 }

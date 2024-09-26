@@ -3,7 +3,7 @@ use embassy_futures::select::{select4, Either4};
 
 use crate::{drivers::{Button, InterruptInput, Potentiometer}, io_mapping::types::{ButtonNextPin, ButtonPausePlayPin, ButtonPrevPin, VolumeDialAdc, VolumeDialPin}};
 
-#[derive(Format)]
+#[derive(Format, Clone)]
 pub enum UserInputCommand {
     PrevSong,
     PausePlaySong,
@@ -41,15 +41,12 @@ impl<'d, 'b> UserInput<'d, 'b> {
             self.volume_dial.wait_for_change_in_position(), 
         ).await;
 
-        let command = match futures {
+        match futures {
             Either4::First(())  => UserInputCommand::PrevSong,
             Either4::Second(()) => UserInputCommand::PausePlaySong,
             Either4::Third(())  => UserInputCommand::NextSong,
             Either4::Fourth(position) => UserInputCommand::ChangeVolume(position),
-        };
-
-        debug!("user input: {}", command);
-        command
+        }
     }
 
     pub async fn test(&mut self) {

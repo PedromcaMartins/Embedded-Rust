@@ -3,19 +3,19 @@ use defmt::{debug, error, Format};
 
 use crate::drivers::{UartError, UartWrapper};
 
-#[derive(Format)]
-pub enum CliCommands {
+#[derive(Format, Clone)]
+pub enum CliCommand {
     Help,
     UserInputTest,
 }
 
-impl FromStr for CliCommands {
+impl FromStr for CliCommand {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "help" => Ok(CliCommands::Help),
-            "test user input" => Ok(CliCommands::UserInputTest),
+            "help" => Ok(CliCommand::Help),
+            "test user input" => Ok(CliCommand::UserInputTest),
             _ => Err(())
         }
     }
@@ -34,7 +34,7 @@ impl<'d> Cli<'d> {
         self.uart.write_line(line.as_bytes()).await
     }
 
-    pub async fn process(&mut self) -> Result<CliCommands, UartError> {
+    pub async fn process(&mut self) -> Result<CliCommand, UartError> {
         let mut line = [0u8; 128];
 
         loop {
@@ -47,7 +47,7 @@ impl<'d> Cli<'d> {
                     continue;
                 }
 
-                if let Ok(command) = command.trim().parse::<CliCommands>() {
+                if let Ok(command) = command.trim().parse::<CliCommand>() {
                     debug!("Cli command: {}", command);
                     return Ok(command);
                 } else {
