@@ -37,6 +37,7 @@ async fn main(spawner: Spawner) {
         Default::default()
     );
     buzzer_pwm.enable(Channel::Ch4);
+
     info!("PWM initialized");
 
     let user_button = ExtiInput::new(

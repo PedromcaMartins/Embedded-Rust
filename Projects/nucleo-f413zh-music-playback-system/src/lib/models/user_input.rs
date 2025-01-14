@@ -1,15 +1,9 @@
-use defmt::{debug, info, Format};
+use defmt::{debug, info};
 use embassy_futures::select::{select4, Either4};
 
 use crate::{drivers::{Button, InterruptInput, Potentiometer}, io_mapping::types::{ButtonNextPin, ButtonPausePlayPin, ButtonPrevPin, VolumeDialAdc, VolumeDialPin}};
 
-#[derive(Format, Clone)]
-pub enum UserInputCommand {
-    PrevSong,
-    PausePlaySong,
-    NextSong,
-    ChangeVolume(u8),
-}
+use super::UserInputCommand;
 
 pub struct UserInput<'d, 'b> {
     button_prev: Button<'d, ButtonPrevPin, InterruptInput<'d, ButtonPrevPin>>,

@@ -12,3 +12,6 @@ pub use adc_manager::*;
 
 mod uart_wrapper;
 pub use uart_wrapper::*;
+
+mod buzzer_encoder;
+pub use buzzer_encoder::*;
