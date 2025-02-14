@@ -1,0 +1,23 @@
+[package]
+name = "driver-ultrasonic"
+version = "0.1.0"
+edition = "2021"
+categories = ["no-std"]
+
+[dependencies]
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
+
+defmt = {version = "0.3", optional = true}
+log = {version = "0.4", default-features = false, optional = true}
+
+[dev-dependencies]
+embedded-hal-mock = { version = "0.11", default-features = false, features = ["eh1", "embedded-hal-async"] }
+tokio = { version = "1", features = ["rt", "macros"] }
+mockall = "0.13"
+mockall_double = "0.3"
+env_logger = "0.11"
+
+[features]
+defmt = ["dep:defmt"]
+log = ["dep:log"]

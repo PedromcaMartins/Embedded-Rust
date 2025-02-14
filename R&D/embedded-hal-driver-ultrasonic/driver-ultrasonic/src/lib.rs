@@ -2,39 +2,39 @@
 
 use core::time::Duration;
 
-use embedded_hal::digital::StatefulOutputPin;
-use embedded_hal_async::{delay::DelayNs as AsyncDelayNs, digital::Wait as AsyncWait};
+use embedded_hal::digital::{InputPin, OutputPin};
+use embedded_hal_async::delay::DelayNs as AsyncDelayNs;
 
 /* -------------------------------------------------------------------------- */
 /*                                   Logging                                  */
 /* -------------------------------------------------------------------------- */
 
-#[cfg(all(feature = "defmt-log", feature = "log"))]
-compile_error!("Cannot enable both log and defmt-log");
+#[cfg(all(feature = "defmt", feature = "log"))]
+compile_error!("Cannot enable both log and defmt");
 
 #[cfg(feature = "log")]
 #[allow(unused_imports)]
 use log::{debug, trace, warn};
 
-#[cfg(feature = "defmt-log")]
+#[cfg(feature = "defmt")]
 #[allow(unused_imports)]
 use defmt::{debug, trace, warn};
 
-#[cfg(all(not(feature = "defmt-log"), not(feature = "log")))]
+#[cfg(all(not(feature = "defmt"), not(feature = "log")))]
 #[macro_export]
 /// Like log::debug! but does nothing at all
 macro_rules! debug {
     ($($arg:tt)+) => {};
 }
 
-#[cfg(all(not(feature = "defmt-log"), not(feature = "log")))]
+#[cfg(all(not(feature = "defmt"), not(feature = "log")))]
 #[macro_export]
 /// Like log::trace! but does nothing at all
 macro_rules! trace {
     ($($arg:tt)+) => {};
 }
 
-#[cfg(all(not(feature = "defmt-log"), not(feature = "log")))]
+#[cfg(all(not(feature = "defmt"), not(feature = "log")))]
 #[macro_export]
 /// Like log::warn! but does nothing at all
 macro_rules! warn {
@@ -56,67 +56,60 @@ pub trait TimeProvider {
 }
 
 /// Ultrasonic Sensor
-#[cfg_attr(feature = "defmt-log", derive(defmt::Format))]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[derive(Debug)]
-pub struct Ultrasonic<PIN, DELAYER, TIMEPROVIDER> 
+pub struct Ultrasonic<PIN> 
 where 
-    PIN: StatefulOutputPin + AsyncWait,
-    DELAYER: AsyncDelayNs,
-    TIMEPROVIDER: TimeProvider,
+PIN: InputPin + OutputPin,
 {
     pin: PIN,
-    delayer: DELAYER,
-    time_provider: TIMEPROVIDER,
 }
 
-impl<PIN, DELAYER, TIMEPROVIDER> Ultrasonic<PIN, DELAYER, TIMEPROVIDER>
+impl<PIN> Ultrasonic<PIN>
 where 
-    PIN: StatefulOutputPin + AsyncWait,
-    DELAYER: AsyncDelayNs,
-    TIMEPROVIDER: TimeProvider,
+    PIN: InputPin + OutputPin,
 {
-    pub fn new(pin: PIN, delayer: DELAYER, time_provider: TIMEPROVIDER) -> Self {
+    pub fn new(pin: PIN) -> Self {
         Self {
             pin,
-            delayer,
-            time_provider,
         }
     }
 
-    pub fn destroy(self) -> (PIN, DELAYER, TIMEPROVIDER) {
-        (self.pin, self.delayer, self.time_provider)
+    pub fn destroy(self) -> PIN {
+        self.pin
     }
 
-    async fn pulse_in(&mut self) -> Result<Duration, PIN::Error> {
+    fn pulse_in(&mut self, time_provider: &mut impl TimeProvider) -> Result<Duration, PIN::Error> {
         // Wait for the pulse to start
-        self.pin.wait_for_rising_edge().await?;
-        let pulse_begin = self.time_provider.now_us();
-        trace!("Pulse begin: {:?}", pulse_begin);
+        while self.pin.is_low()? {}
+        let pulse_begin = time_provider.now_us();
 
         // Wait for the pulse to stop
-        self.pin.wait_for_falling_edge().await?;
-        let pulse_end = self.time_provider.now_us();
+        while self.pin.is_high()? {}
+        let pulse_end = time_provider.now_us();
+
+        trace!("Pulse begin: {:?}", pulse_begin);
         trace!("Pulse end: {:?}", pulse_end);
 
         // Calculate the pulse duration
         Ok(Duration::from_micros(pulse_end - pulse_begin))
     }
 
-    async fn duration(&mut self) -> Result<Duration, PIN::Error> {
+    async fn duration(&mut self, delay: &mut impl AsyncDelayNs, time_provider: &mut impl TimeProvider) -> Result<Duration, PIN::Error> {
         self.pin.set_low()?;
-        self.delayer.delay_us(2).await;
+        delay.delay_us(2).await;
         self.pin.set_high()?;
-        self.delayer.delay_us(5).await;
+        delay.delay_us(5).await;
         self.pin.set_low()?;
 
-        self.pulse_in().await
+        self.pulse_in(time_provider)
     }
 
     /// The measured distance from the range 0 to 4000 Millimeters
     /// 
     /// Warning: The data rate is porpotional to the distance measured
-    pub async fn measure_in_millimeters(&mut self) -> Result<u32, PIN::Error> {
-        let duration = self.duration().await?;
+    pub async fn measure_in_millimeters(&mut self, delay: &mut impl AsyncDelayNs, time_provider: &mut impl TimeProvider) -> Result<u32, PIN::Error> {
+        let duration = self.duration(delay, time_provider).await?;
         trace!("Duration: {:?}", duration);
         if duration.as_secs() > 0 {
             panic!("duration greater than one second. This is not allowed with the current implementation");
@@ -155,12 +148,10 @@ mod test {
                 gpio::Transaction::set(gpio::State::Low),
                 gpio::Transaction::set(gpio::State::High),
                 gpio::Transaction::set(gpio::State::Low),
-                gpio::Transaction::wait_for_edge(gpio::Edge::Rising),
-                gpio::Transaction::wait_for_edge(gpio::Edge::Falling),
             ]
         );
 
-        let delayer = delay::NoopDelay::new();
+        let mut delay = delay::NoopDelay::new();
 
         let mut time_provider = MockTimeProvider::default();
         time_provider.expect_now_us()
@@ -173,14 +164,12 @@ mod test {
         // Create a mock Ultrasonic Sensor
         let mut ultrasonic = Ultrasonic::new(
             pin, 
-            delayer, 
-            time_provider,
         );
 
-        let value = ultrasonic.measure_in_millimeters().await.unwrap();
+        let value = ultrasonic.measure_in_millimeters(&mut delay, &mut time_provider).await.unwrap();
         assert_eq!(value, PULSE_DISTANCE_MILLIMETERS);
 
-        let (mut pin, _, _) = ultrasonic.destroy();
+        let mut pin = ultrasonic.destroy();
         pin.done();
     }
 }
