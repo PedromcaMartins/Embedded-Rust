@@ -1,0 +1,15 @@
+[package]
+name = "pc"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+defmt-decoder = "0.4.0"
+
+anyhow = "1"
+log = "0.4"
+notify = "8"
+tokio = { version = "1.38", features = ["full"] }
+serialport = "4.2.2"
+clap = { version = "4.4", features = ["derive"] }
+colored = "3.0.0" # Optional for better CLI display
