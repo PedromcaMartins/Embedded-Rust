@@ -1,18 +1,12 @@
 #![no_std]
 #![no_main]
 
-mod fmt;
-
-use defmt::Debug2Format;
-#[cfg(not(feature = "defmt"))]
-use panic_halt as _;
-#[cfg(feature = "defmt")]
 use {defmt_rtt as _, panic_probe as _};
 
 use embassy_executor::Spawner;
 use embassy_stm32::{bind_interrupts, gpio::{Input, Level, Pull}, peripherals, sdmmc::{self, DataBlock, Sdmmc}, time::{mhz, Hertz}, Config};
 use embassy_time::Instant;  // Add for timing
-use fmt::info;
+use defmt::{*, panic};
 
 /// This is a safeguard to not overwrite any data on the SD card.
 /// If you don't care about SD card contents, set this to `true` to test writes.

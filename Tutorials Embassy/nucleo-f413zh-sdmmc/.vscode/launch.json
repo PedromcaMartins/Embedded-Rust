@@ -2,11 +2,11 @@
   "configurations": [
     {
       "chip": "STM32F413ZHJx",
-      "connectUnderReset": true,
+      "consoleLogLevel": "Console",
       "coreConfigs": [
         {
           "coreIndex": 0,
-          "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabi/debug/nucleo-f413zh-sdmmc",
+          "programBinary": "target/thumbv7em-none-eabi/debug/test-stm",
           "rttChannelFormats": [
             {
               "channelNumber": 0,
@@ -18,21 +18,25 @@
               "dataFormat": "BinaryLE"
             }
           ],
-          "rttEnabled": true
+          "rttEnabled": true,
+          "svdFile": ""
         }
       ],
       "cwd": "${workspaceFolder}",
       "env": {
-        "DEFMT_LOG": "debug",
-        "RUST_LOG": "debug"
+        "RUST_LOG": "info"
       },
       "flashingConfig": {
         "flashingEnabled": true,
-        "haltAfterReset": true
+        "formatOptions": {},
+        "haltAfterReset": false
       },
-      "name": "probe-rs Test",
-      "preLaunchTask": "${defaultBuildTask}",
+      "name": "probe_rs",
       "request": "launch",
+      "runtimeArgs": [
+        "dap-server"
+      ],
+      "runtimeExecutable": "probe-rs",
       "type": "probe-rs-debug"
     }
   ],
