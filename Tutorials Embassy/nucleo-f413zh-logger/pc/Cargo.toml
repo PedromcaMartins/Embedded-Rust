@@ -4,12 +4,12 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-defmt-decoder = "0.4.0"
-
 anyhow = "1"
+clap = { version = "4.0", features = ["derive", "env"] }
+defmt-decoder = { version = "=0.4.0" }
+defmt-parser = "0.4.1"
 log = "0.4"
+env_logger = "0.11"
 notify = "8"
 tokio = { version = "1.38", features = ["full"] }
-serialport = "4.2.2"
-clap = { version = "4.4", features = ["derive"] }
-colored = "3.0.0" # Optional for better CLI display
+tokio-serial = "5.4"

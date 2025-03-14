@@ -1,38 +1,101 @@
-use anyhow::{Context, Result};
-use clap::{Parser, Subcommand};
-use colored::*;
-use defmt_decoder::{DecodeError, Table};
-use serialport::{SerialPort};
-use std::{fs::File, io::{Read, Write}, path::PathBuf, time::Duration};
+use std::{
+    env, path::PathBuf, time::Duration
+};
 
-#[derive(Parser)]
-#[command(author, version, about)]
-struct Args {
-    /// Path to defmt symbol file
-    #[arg(short, long)]
-    elf: PathBuf,
+use anyhow::anyhow;
+use defmt_decoder::{
+    DecodeError, Frame, Location, Locations, Table
+};
+use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
+use tokio::{
+    fs,
+    io::{self, AsyncReadExt, Stdin},
+    net::TcpStream,
+    select,
+    sync::mpsc::Receiver,
+};
+use tokio_serial::{SerialPort, SerialPortBuilderExt, SerialStream};
 
-    #[command(subcommand)]
-    command: Command,
+#[derive(Debug)]
+struct LogMessage {
+    timestamp: String,
+    level: Option<defmt_parser::Level>,
+    message: String,
+    location: Option<Location>, 
 }
 
-#[derive(Subcommand)]
-enum Command {
-    /// List available COM ports
-    List,
-
-    /// Open COM port
-    Open {
-        #[arg(help = "COM port name (e.g., COM3 or /dev/ttyUSB0)")]
-        port: String,
-
-        #[arg(short, long, default_value = "115200")]
-        baud: u32,
-    },
+impl LogMessage {
+    fn new(frame: &Frame, locs: &Option<Locations>) -> Self {
+        Self {
+            timestamp: frame
+                .display_timestamp()
+                .map(|ts| ts.to_string())
+                .unwrap_or_default(),
+            level: frame.level(),
+            message: frame.display_message().to_string(),
+            location: locs.as_ref()
+                .and_then(|locs| locs.get(&frame.index()))
+                .cloned(),
+        }
+    }
 }
 
-fn list_ports() -> Result<()> {
-    let ports = serialport::available_ports()?;
+enum Source {
+    Stdin(Stdin),
+    Tcp(TcpStream),
+    Serial(SerialStream),
+}
+
+impl Source {
+    fn stdin() -> Self {
+        Source::Stdin(io::stdin())
+    }
+
+    async fn tcp(host: String, port: u16) -> anyhow::Result<Self> {
+        match TcpStream::connect((host, port)).await {
+            Ok(stream) => Ok(Source::Tcp(stream)),
+            Err(e) => Err(anyhow!(e)),
+        }
+    }
+
+    fn serial(path: PathBuf, baud: u32) -> anyhow::Result<Self> {
+        let mut ser = tokio_serial::new(path.to_string_lossy(), baud).open_native_async()?;
+        ser.set_timeout(Duration::from_millis(500))?;
+        Ok(Source::Serial(ser))
+    }
+
+    async fn read(&mut self, buf: &mut [u8]) -> anyhow::Result<usize> {
+        match self {
+            Source::Stdin(stdin) => Ok(stdin.read(buf).await?),
+            Source::Tcp(tcpstream) => Ok(tcpstream.read(buf).await?),
+            Source::Serial(serial) => Ok(serial.read(buf).await?),
+        }
+    }
+}
+
+const READ_BUFFER_SIZE: usize = 1024;
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    env_logger::init();
+    list_ports()?;
+
+    // We create the source outside of the run command since recreating the stdin looses us some frames
+    let mut source = Source::serial(PathBuf::from("COM4"), 115200)?;
+    let mut manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    let _ = manifest_dir.pop();
+    let elf = manifest_dir
+        .join("target")
+        .join("thumbv7em-none-eabihf")
+        .join("debug")
+        .join("nucleo-f413zh-logger");
+
+    log::debug!("absolute path of elf file with defmt messages: {:?}", elf);
+    run_and_watch(elf, &mut source).await
+}
+
+fn list_ports() -> anyhow::Result<()> {
+    let ports = tokio_serial::available_ports()?;
     if ports.is_empty() {
         println!("No COM ports found.");
     } else {
@@ -44,45 +107,89 @@ fn list_ports() -> Result<()> {
     Ok(())
 }
 
-fn open_port(port: &str, baud: u32, table: &Table) -> Result<()> {
-    println!("Opening port: {} at {} baud", port, baud);
-    let mut port = serialport::new(port, baud)
-        .timeout(Duration::from_secs(10))
-        .open()
-        .with_context(|| format!("Failed to open port {}", port))?;
+async fn run_and_watch(elf: PathBuf, source: &mut Source) -> anyhow::Result<()> {
+    let (tx, mut rx) = tokio::sync::mpsc::channel(1);
 
-    let mut buf = [0u8; 10];
-    println!("{}", "Listening...".green());
+    let path = elf.clone().canonicalize().unwrap();
+
+    // We want the elf directory instead of the elf, since some editors remove
+    // and recreate the file on save which will remove the notifier
+    let directory_path = path.parent().unwrap();
+
+    let mut watcher = RecommendedWatcher::new(
+        move |res| {
+            let _ = tx.blocking_send(res);
+        },
+        Config::default(),
+    )?;
+    watcher.watch(directory_path.as_ref(), RecursiveMode::NonRecursive)?;
 
     loop {
-        port.read_exact(&mut buf)?;
-
-        match table.decode(&buf) {
-            Ok((frame, _)) => println!("{}", frame.display(false)),
-            Err(DecodeError::UnexpectedEof) => return Ok(()),
-            Err(DecodeError::Malformed) => match table.encoding().can_recover() {
-                // if recovery is impossible, abort
-                false => return Err(DecodeError::Malformed.into()),
-                // if recovery is possible, skip the current frame and continue with new data
-                true => {
-                        println!("(HOST) malformed frame skipped");
-                        println!("└─ {} @ {}:{}", env!("CARGO_PKG_NAME"), file!(), line!());
-                }
-            }
+        select! {
+            r = handle_stream(elf.clone(), source) => r?,
+            _ = has_file_changed(&mut rx, &path) => ()
         }
     }
 }
 
-const READ_BUFFER_SIZE: usize = 1024;
+async fn has_file_changed(rx: &mut Receiver<Result<Event, notify::Error>>, path: &PathBuf) -> bool {
+    loop {
+        if let Some(Ok(event)) = rx.recv().await {
+            if event.paths.contains(path) {
+                if let notify::EventKind::Create(_) | notify::EventKind::Modify(_) = event.kind {
+                    break;
+                }
+            }
+        }
+    }
+    true
+}
 
-fn main() -> Result<()> {
-    let args = Args::parse();
+async fn handle_stream(elf: PathBuf, source: &mut Source) -> anyhow::Result<()> {
+    let bytes = fs::read(elf).await?;
+    let table = Table::parse(&bytes)?.ok_or_else(|| anyhow!(".defmt data not found"))?;
+    let locs = table.get_locations(&bytes)?;
 
-    let elf_data = std::fs::read(&args.elf)?;
-    let table = Table::parse(&elf_data)?.unwrap();
+    // check if the locations info contains all the indicies
+    let locs = if table.indices().all(|idx| locs.contains_key(&(idx as u64))) {
+        Some(locs)
+    } else {
+        log::warn!("(BUG) location info is incomplete; it will be omitted from the output");
+        None
+    };
 
-    match &args.command {
-        Command::List => list_ports(),
-        Command::Open { port, baud } => open_port(port, *baud, &table),
+    let mut buf = [0; READ_BUFFER_SIZE];
+    let mut num_messages: u64 = 0;
+
+    loop {
+        // read from stdin or tcpstream and push it to the decoder
+        let n = source.read(&mut buf).await?;
+        let mut start = 0;
+
+        loop {
+            match table.decode(&buf[start..n]) {
+                Ok((frame, consumed)) => {
+                    println!("{:?}", LogMessage::new(&frame, &locs));
+                    start += consumed;
+                    num_messages += 1;
+                    if num_messages % 1000 == 0 {
+                        log::debug!("{} messages decoded", num_messages);
+                    }
+                },
+                Err(DecodeError::UnexpectedEof) => break,
+                Err(DecodeError::Malformed) => match table.encoding().can_recover() {
+                    // if recovery is impossible, abort
+                    false => {
+                        log::error!("malformed frame; impossible to recover");
+                        return Err(DecodeError::Malformed.into())
+                    },
+                    // if recovery is possible, skip the current frame and continue with new data
+                    true => {
+                        log::warn!("malformed frame skipped");
+                        break;
+                    }
+                },
+            }
+        }
     }
 }
